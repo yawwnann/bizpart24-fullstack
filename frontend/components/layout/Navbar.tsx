@@ -128,7 +128,7 @@ export function Navbar() {
                 </Link>
                 {categories.map((cat) => (
                     <Link 
-                        key={cat._id} 
+                        key={cat.id} 
                         href={`/products?category=${cat.name.toLowerCase()}`} 
                         className={linkClass(isActive('/products', cat.name.toLowerCase()))}
                     >

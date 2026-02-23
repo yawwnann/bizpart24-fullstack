@@ -2,8 +2,9 @@ import { useEffect, useState } from "react"
 import api from "@/lib/api"
 
 interface Category {
-  _id: string
+  id: string
   name: string
+  slug: string
   image?: string
 }
 

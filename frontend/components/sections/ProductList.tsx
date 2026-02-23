@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ProductCard } from "@/components/ui/ProductCard";
+import { ProductCardSkeleton } from "@/components/ui/ProductCardSkeleton";
 import api from "@/lib/api";
 
 interface Product {
@@ -31,13 +32,12 @@ export function ProductList() {
         const response = await import("@/lib/api").then(mod => mod.default.get('/products'));
         console.log("API Response (ProductList):", response.data);
         if (response.data.success) {
-          // Map backend _id to frontend id
+          // Add default values for missing fields
           const mappedProducts = response.data.data.map((item: any) => ({
             ...item,
-            id: item._id,
-            rating: item.rating || 4.5, // Default if missing
+            rating: item.rating || 4.5,
             reviews: item.reviews || 0,
-            originalPrice: null, // Backend might not have this yet
+            originalPrice: null,
             discount: null,
             isNew: false
           }));
@@ -56,8 +56,18 @@ export function ProductList() {
 
   if (loading) {
     return (
-      <section className="py-12 flex justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+      <section className="py-12">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Produk Terbaru</h2>
+            <p className="text-gray-500 mt-1 text-sm">Koleksi terbaru suku cadang berkualitas tinggi</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <ProductCardSkeleton key={i} />
+          ))}
+        </div>
       </section>
     );
   }

@@ -315,7 +315,7 @@ export default function AdminProductFormPage() {
                                 >
                                     <option value="">Pilih Merek</option>
                                     {makes.map(m => (
-                                        <option key={m._id} value={m.name}>{m.name}</option>
+                                        <option key={m.id} value={m.name}>{m.name}</option>
                                     ))}
                                 </select>
                                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -362,7 +362,7 @@ export default function AdminProductFormPage() {
                                 >
                                     <option value="">Pilih Model</option>
                                     {models.map(m => (
-                                        <option key={m._id} value={m.name}>{m.name}</option>
+                                        <option key={m.id} value={m.name}>{m.name}</option>
                                     ))}
                                 </select>
                                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -427,7 +427,7 @@ export default function AdminProductFormPage() {
                                 >
                                     <option value="">Pilih Kategori</option>
                                     {categories.map(c => (
-                                        <option key={c._id} value={c.name}>{c.name}</option>
+                                        <option key={c.id} value={c.name}>{c.name}</option>
                                     ))}
                                 </select>
                                 {/* Custom arrow for select */}

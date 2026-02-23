@@ -29,5 +29,10 @@ router.get('/admin/list', protect, orderController.getAll); // Changed path to a
 router.get('/admin/:id', protect, orderController.getByIdAdmin); 
 router.put('/admin/:id/ongkir', protect, orderController.updateShipping);
 router.put('/admin/:id/status', protect, orderController.updateStatus);
+router.put('/admin/:id/resi', protect, orderController.updateTrackingNumber);
+
+// Public: Pelanggan konfirmasi barang sudah diterima (opsional lampirkan foto)
+router.post('/confirm-received', upload.single('image'), orderController.confirmReceived);
 
 export default router;
+

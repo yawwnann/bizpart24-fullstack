@@ -8,27 +8,29 @@ export class OrderController {
   // Public
   public create = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // Map 'name' from frontend to 'customerName' if needed
       const { customerName, name, email, phone, address, items } = req.body;
       const finalCustomerName = customerName || name;
+
+      // ✅ Fix N+1: Fetch all products in a single query instead of one per item
+      const productIds = items.map((item: any) => item.productId);
+      const products = await prisma.product.findMany({
+        where: { id: { in: productIds } }
+      });
+      const productMap = new Map(products.map(p => [p.id, p]));
 
       let itemsTotal = 0;
       const orderItemsData = [];
 
-      // Validate products and calculate total
       for (const item of items) {
-        const product = await prisma.product.findUnique({ where: { id: item.productId } });
-        
+        const product = productMap.get(item.productId);
         if (!product) {
-          return res.status(404).json({ success: false, message: `Product ${item.productId} not found` });
+          return res.status(404).json({ success: false, message: `Produk ${item.productId} tidak ditemukan` });
         }
         if (product.stock < item.qty) {
-            return res.status(400).json({ success: false, message: `Insufficient stock for ${product.name}` });
+          return res.status(400).json({ success: false, message: `Stok tidak cukup untuk ${product.name}` });
         }
-
         const subtotal = product.price * item.qty;
         itemsTotal += subtotal;
-
         orderItemsData.push({
           productId: product.id,
           name: product.name,
@@ -41,39 +43,25 @@ export class OrderController {
       // Generate Order ID (INV-YYYY-XXXX)
       const date = new Date();
       const year = date.getFullYear();
-      
       const startOfYear = new Date(year, 0, 1);
-      const endOfYear = new Date(year + 1, 0, 1);
-
-      const count = await prisma.order.count({
-         where: {
-             createdAt: {
-                 gte: startOfYear,
-                 lt: endOfYear
-             }
-         }
-      });
-      
+      const endOfYear   = new Date(year + 1, 0, 1);
+      const count = await prisma.order.count({ where: { createdAt: { gte: startOfYear, lt: endOfYear } } });
       const orderId = `INV-${year}-${(count + 1).toString().padStart(4, '0')}`;
 
       // Create Order with Nested Items
       const order = await prisma.order.create({
         data: {
-            orderId,
-            customerName: finalCustomerName,
-            email,
-            phone,
-            address,
-            itemsTotal,
-            shippingCost: 0,
-            grandTotal: itemsTotal,
-            items: {
-                create: orderItemsData
-            }
+          orderId,
+          customerName: finalCustomerName,
+          email,
+          phone,
+          address,
+          itemsTotal,
+          shippingCost: 0,
+          grandTotal: itemsTotal,
+          items: { create: orderItemsData }
         },
-        include: {
-            items: true
-        }
+        include: { items: true }
       });
 
       // Send Emails (Non-blocking)
@@ -125,6 +113,9 @@ export class OrderController {
               },
               include: { items: true }
           });
+
+          // Notify admin via email (include proof image link)
+          MailService.sendPaymentProofEmail(updatedOrder);
 
           res.json({ success: true, message: 'Proof uploaded', data: updatedOrder });
 
@@ -227,4 +218,82 @@ export class OrderController {
       next(error);
     }
   };
+
+  public updateTrackingNumber = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { trackingNumber, courierType } = req.body;
+      const id = String(req.params.id);
+
+      if (!courierType) {
+        return res.status(400).json({ success: false, message: 'Jenis ekspedisi wajib diisi' });
+      }
+
+      const existing = await prisma.order.findUnique({ where: { id } });
+      if (!existing) {
+        return res.status(404).json({ success: false, message: 'Order not found' });
+      }
+
+      const updateData: any = { courierType, status: 'dikirim' };
+      if (trackingNumber && trackingNumber.trim()) {
+        updateData.trackingNumber = trackingNumber.trim();
+      }
+
+      const order = await prisma.order.update({
+        where: { id },
+        data: updateData,
+        include: { items: true }
+      });
+
+      // Notify customer via email
+      MailService.sendTrackingNumberEmail(order);
+
+      res.json({ success: true, data: order });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public confirmReceived = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { orderId } = req.body;
+
+      if (!orderId) {
+        return res.status(400).json({ success: false, message: 'orderId wajib diisi' });
+      }
+
+      const existing = await prisma.order.findUnique({
+        where: { orderId },
+        include: { items: true }
+      });
+
+      if (!existing) {
+        return res.status(404).json({ success: false, message: 'Pesanan tidak ditemukan' });
+      }
+
+      if (existing.status !== 'dikirim') {
+        return res.status(400).json({ success: false, message: 'Konfirmasi hanya bisa dilakukan saat status Dikirim' });
+      }
+
+      // Upload foto bukti penerimaan jika ada
+      let receiptImageUrl: string | null = null;
+      if (req.file) {
+        receiptImageUrl = await uploadToCloudinary(req.file.buffer, 'receipts') as string;
+      }
+
+      // Set status selesai
+      const order = await prisma.order.update({
+        where: { orderId },
+        data: { status: 'selesai' },
+        include: { items: true }
+      });
+
+      // Kirim email notifikasi ke admin
+      MailService.sendOrderReceivedEmail(order, receiptImageUrl);
+
+      res.json({ success: true, data: order });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
+

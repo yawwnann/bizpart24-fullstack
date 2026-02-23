@@ -47,7 +47,7 @@ export function MobileMenu() {
                 </Link>
                 {categories.map((cat) => (
                     <Link 
-                        key={cat._id} 
+                        key={cat.id} 
                         href={`/products?category=${cat.name.toLowerCase()}`} 
                         onClick={closeMenu} 
                         className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-500 hover:bg-red-50 hover:text-[#D92D20] transition-colors font-medium ml-4 border-l border-gray-100"

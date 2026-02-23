@@ -6,7 +6,12 @@ export class ProductController {
   // Public
   public getAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { category, make, model, year, search } = req.query;
+      const { category, make, model, year, search, page } = req.query;
+
+      // Pagination setup
+      const limit = 10; // Fixed limit
+      const currentPage = parseInt(page as string) || 1;
+      const skip = (currentPage - 1) * limit;
 
       let where: any = {};
 
@@ -32,6 +37,9 @@ export class ProductController {
         where.name = { contains: search as string, mode: 'insensitive' };
       }
 
+      // Get total count for pagination
+      const total = await prisma.product.count({ where });
+
       const products = await prisma.product.findMany({
         where,
         include: {
@@ -39,7 +47,9 @@ export class ProductController {
           make: true,
           model: true,
         },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit
       });
       
       // Transform data to match previous structure (flattening relations if needed, or keeping objects)
@@ -57,7 +67,21 @@ export class ProductController {
         modelId: p.modelId
       }));
 
-      res.json({ success: true, count: products.length, data: formattedProducts });
+      // Calculate pagination metadata
+      const totalPages = Math.ceil(total / limit);
+
+      res.json({ 
+        success: true, 
+        data: formattedProducts,
+        pagination: {
+          total,
+          totalPages,
+          currentPage,
+          limit,
+          hasNext: currentPage < totalPages,
+          hasPrev: currentPage > 1
+        }
+      });
     } catch (error) {
       next(error);
     }

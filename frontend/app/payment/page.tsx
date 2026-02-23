@@ -1,247 +1,373 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
-import { Button } from "@/components/ui/Button"
-import { Input } from "@/components/ui/Input"
-import { Card } from "@/components/ui/Card"
-import { Loader2, Search, Upload, CheckCircle, AlertCircle } from "lucide-react"
+import { Search, CheckCircle, Loader2, Upload, X, ImageIcon, Receipt, MapPin, Package, PackageCheck } from "lucide-react"
 import api from "@/lib/api"
-import { useRouter } from "next/navigation"
+
+type OrderItem = { name: string; qty: number; price: number; subtotal: number }
+type Order = {
+  id: string; orderId: string; customerName: string; email: string
+  phone: string; address: string; itemsTotal: number; shippingCost: number
+  grandTotal: number; status: string; paymentProof: string | null
+  trackingNumber: string | null; courierType: string | null; items: OrderItem[]
+}
+
+const STATUS_MAP: Record<string, { label: string; cls: string }> = {
+  menunggu_pembayaran: { label: "Menunggu Pembayaran",  cls: "bg-amber-50 text-amber-700 border-amber-200" },
+  diproses:           { label: "Sedang Diproses",       cls: "bg-blue-50 text-blue-700 border-blue-200"   },
+  dikirim:            { label: "Sedang Dikirim",         cls: "bg-violet-50 text-violet-700 border-violet-200" },
+  selesai:            { label: "Selesai",                cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  batal:              { label: "Dibatalkan",             cls: "bg-red-50 text-red-700 border-red-200" },
+}
 
 export default function PaymentPage() {
-  const router = useRouter()
-  const [step, setStep] = useState<1 | 2 | 3>(1)
-  const [orderId, setOrderId] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [order, setOrder] = useState<any>(null)
-  const [file, setFile] = useState<File | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [uploadProgress, setUploadProgress] = useState(0)
+  const [orderId, setOrderId]           = useState("")
+  const [order, setOrder]               = useState<Order | null>(null)
+  const [searching, setSearching]       = useState(false)
+  const [searchError, setSearchError]   = useState("")
 
-  // Step 1: Find Order
-  const handleCheckOrder = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const [imageFile, setImageFile]       = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [uploading, setUploading]       = useState(false)
+  const [uploadSuccess, setUploadSuccess] = useState(false)
+  const [uploadError, setUploadError]   = useState("")
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  // Confirm received state
+  const [receiptFile, setReceiptFile]       = useState<File | null>(null)
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null)
+  const [confirming, setConfirming]         = useState(false)
+  const [confirmSuccess, setConfirmSuccess] = useState(false)
+  const [confirmError, setConfirmError]     = useState("")
+  const receiptFileRef = useRef<HTMLInputElement>(null)
+
+  const handleSearch = async () => {
     if (!orderId.trim()) return
-
-    setLoading(true)
-    setError(null)
+    setSearching(true); setSearchError(""); setOrder(null); setUploadSuccess(false)
     try {
-      const response = await api.get(`/orders/${orderId}`)
-      if (response.data.success) {
-        setOrder(response.data.data)
-        setStep(2)
-      }
-    } catch (err: any) {
-      console.error("Order not found", err)
-      setError("Pesanan tidak ditemukan. Mohon cek kembali ID Pesanan Anda.")
-      setOrder(null)
-    } finally {
-      setLoading(false)
-    }
+      const res = await api.get(`/orders/${orderId.trim()}`)
+      if (res.data.success) setOrder(res.data.data)
+      else setSearchError("Pesanan tidak ditemukan. Periksa kembali ID pesanan Anda.")
+    } catch {
+      setSearchError("Pesanan tidak ditemukan. Periksa kembali ID pesanan Anda.")
+    } finally { setSearching(false) }
   }
 
-  // Step 2: Handle File Selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0])
-    }
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImageFile(file); setImagePreview(URL.createObjectURL(file)); setUploadError("")
   }
 
-  // Step 2: Upload Proof
   const handleUpload = async () => {
-    if (!file || !order) return
-
-    setLoading(true)
-    setError(null)
-    
-    const formData = new FormData()
-    formData.append("orderId", order.orderId)
-    formData.append("image", file)
-
+    if (!imageFile || !order) return
+    setUploading(true); setUploadError("")
     try {
-      // We need to use native fetch or specific axios config for multipart/form-data if the interceptor interferes, 
-      // but usually axios handles FormData automatically by removing Content-Type header to let browser set boundary.
-      const response = await api.post('/orders/upload-proof', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },
-        onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
-            setUploadProgress(percentCompleted)
-        }
-      })
-
-      if (response.data.success) {
-        setStep(3) // Success
-      }
-    } catch (err: any) {
-      console.error("Upload failed", err)
-      setError("Gagal mengupload bukti pembayaran. Silakan coba lagi.")
-    } finally {
-      setLoading(false)
-    }
+      const formData = new FormData()
+      formData.append("image", imageFile)
+      formData.append("orderId", order.orderId)
+      const res = await api.post("/orders/upload-proof", formData, { headers: { "Content-Type": "multipart/form-data" } })
+      if (res.data.success) { setUploadSuccess(true); setOrder(res.data.data) }
+    } catch {
+      setUploadError("Gagal mengunggah. Silakan coba lagi.")
+    } finally { setUploading(false) }
   }
+
+  const handleReceiptFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setReceiptFile(file); setReceiptPreview(URL.createObjectURL(file)); setConfirmError("")
+  }
+
+  const handleConfirmReceived = async () => {
+    if (!order) return
+    setConfirming(true); setConfirmError("")
+    try {
+      const formData = new FormData()
+      formData.append("orderId", order.orderId)
+      if (receiptFile) formData.append("image", receiptFile)
+      const res = await api.post("/orders/confirm-received", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      })
+      if (res.data.success) { setConfirmSuccess(true); setOrder(res.data.data) }
+      else setConfirmError("Gagal mengkonfirmasi. Silakan coba lagi.")
+    } catch {
+      setConfirmError("Gagal mengkonfirmasi. Silakan coba lagi.")
+    } finally { setConfirming(false) }
+  }
+
+  const alreadyPaid = order?.paymentProof || uploadSuccess
+  const status = order ? (STATUS_MAP[order.status] ?? { label: order.status, cls: "bg-gray-50 text-gray-600 border-gray-200" }) : null
 
   return (
     <main className="min-h-screen bg-gray-50">
       <Navbar />
-      
-      <div className="container mx-auto px-4 md:px-8 py-12">
-        <div className="max-w-2xl mx-auto">
-            <div className="text-center mb-10">
-                <h1 className="text-3xl font-bold text-gray-900 mb-4">Konfirmasi Pembayaran</h1>
-                <p className="text-gray-500">Lacak pesanan dan upload bukti pembayaran Anda di sini.</p>
+
+      <div className="container mx-auto px-4 md:px-8 py-14">
+        <div className="max-w-xl mx-auto">
+
+          {/* Page title */}
+          <div className="text-center mb-10">
+            <div className="w-12 h-12 rounded-2xl bg-gray-900 flex items-center justify-center mx-auto mb-4">
+              <Receipt className="w-6 h-6 text-white" />
             </div>
+            <h1 className="text-2xl font-bold text-gray-900">Konfirmasi Pembayaran</h1>
+            <p className="text-gray-400 text-sm mt-2">Masukkan ID Pesanan Anda untuk melanjutkan pembayaran</p>
+          </div>
 
-            {/* Step 1: Input Order ID */}
-            {step === 1 && (
-                <Card className="p-8 bg-white border-gray-100 shadow-sm">
-                    <form onSubmit={handleCheckOrder} className="space-y-6">
-                        <div className="space-y-2">
-                            <label htmlFor="orderId" className="text-sm font-medium text-gray-700">Masukkan ID Pesanan</label>
-                            <Input 
-                                id="orderId" 
-                                placeholder="Contoh: INV-2024-0001" 
-                                value={orderId}
-                                onChange={(e) => setOrderId(e.target.value)}
-                                className="h-12 text-lg uppercase tracking-wider bg-gray-50 border-gray-200 text-gray-900 rounded-full focus:bg-white focus:ring-1 focus:ring-gray-200 focus:border-transparent transition-all placeholder:text-gray-400"
-                                autoFocus
-                            />
-                            <p className="text-xs text-gray-400">ID Pesanan dapat ditemukan di pesan WhatsApp atau email konfirmasi.</p>
-                        </div>
+          {/* Search box */}
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-5 shadow-sm">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-2">ID Pesanan</label>
+            <div className="flex gap-2.5">
+              <input
+                type="text"
+                placeholder="Contoh: INV-2026-0001"
+                value={orderId}
+                onChange={(e) => setOrderId(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+              />
+              <button
+                onClick={handleSearch}
+                disabled={searching || !orderId.trim()}
+                className="px-5 bg-gray-900 hover:bg-gray-700 text-white rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50 transition-colors"
+              >
+                {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                Cari
+              </button>
+            </div>
+            {searchError && <p className="mt-3 text-sm text-red-500 flex items-center gap-1.5">⚠ {searchError}</p>}
+          </div>
 
-                        {error && (
-                            <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2">
-                                <AlertCircle className="w-4 h-4" /> {error}
-                            </div>
-                        )}
+          {/* Order result */}
+          {order && (
+            <div className="space-y-4">
 
-                        <Button 
-                            type="submit" 
-                            className="w-full h-12 bg-[#D92D20] hover:bg-[#b91c1c] text-white font-bold"
-                            disabled={loading}
-                        >
-                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Cek Pesanan"}
-                        </Button>
-                    </form>
-                </Card>
-            )}
-
-            {/* Step 2: Payment Details & Upload */}
-            {step === 2 && order && (
-                <div className="space-y-6">
-                    {/* Order Details */}
-                    <Card className="p-6 bg-white border-gray-100 shadow-sm">
-                        <div className="flex justify-between items-start mb-4 border-b border-gray-100 pb-4">
-                            <div>
-                                <h3 className="font-bold text-lg text-gray-900">ID: {order.orderId}</h3>
-                                <p className="text-sm text-gray-500">{order.customerName}</p>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-sm text-gray-500">Total Tagihan</p>
-                                <p className="font-bold text-xl text-[#D92D20]">Rp {order.grandTotal.toLocaleString("id-ID")}</p>
-                            </div>
-                        </div>
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                            <h4 className="text-sm font-semibold text-gray-700 mb-2">Item Pesanan:</h4>
-                            <ul className="space-y-2">
-                                {order.items.map((item: any) => (
-                                    <li key={item._id} className="text-sm flex justify-between text-gray-600">
-                                        <span>{item.qty}x {item.name}</span>
-                                        <span>Rp {(item.price * item.qty).toLocaleString("id-ID")}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    </Card>
-
-                    {/* QRIS Section */}
-                    <Card className="p-6 bg-white border-gray-100 shadow-sm text-center">
-                        <h3 className="font-bold text-lg text-gray-900 mb-4">Scan QRIS untuk Membayar</h3>
-                        <div className="bg-white border-2 border-gray-200 rounded-xl p-4 inline-block mb-4">
-                           {/* Placeholder QRIS Image */}
-                           <div className="w-64 h-64 bg-gray-100 flex items-center justify-center text-gray-400">
-                                <img 
-                                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/QR_code_for_mobile_English_Wikipedia.svg/1200px-QR_code_for_mobile_English_Wikipedia.svg.png" 
-                                    alt="QRIS Code" 
-                                    className="w-full h-full object-contain opacity-80"
-                                />
-                           </div>
-                        </div>
-                        <p className="text-sm text-gray-500 mb-2">Menerima pembayaran dari semua e-wallet dan mobile banking.</p>
-                        <p className="text-xs text-gray-400">Halaman ini otomatis, silakan upload bukti transfer di bawah.</p>
-                    </Card>
-
-                    {/* Upload Section */}
-                    <Card className="p-6 bg-white border-gray-100 shadow-sm">
-                        <h3 className="font-bold text-lg text-gray-900 mb-4">Upload Bukti Pembayaran</h3>
-                        
-                        <div className="space-y-4">
-                            <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors cursor-pointer relative">
-                                <input 
-                                    type="file" 
-                                    accept="image/*" 
-                                    onChange={handleFileChange}
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                />
-                                <Upload className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-                                <p className="text-sm text-gray-600 font-medium">
-                                    {file ? file.name : "Klik untuk pilih gambar bukti transfer"}
-                                </p>
-                                <p className="text-xs text-gray-400 mt-1">Format: JPG, PNG, max 5MB</p>
-                            </div>
-
-                            {error && (
-                                <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">
-                                    {error}
-                                </div>
-                            )}
-
-                            <div className="flex gap-3">
-                                <Button 
-                                    variant="outline" 
-                                    className="flex-1"
-                                    onClick={() => setStep(1)}
-                                    disabled={loading}
-                                >
-                                    Kembali
-                                </Button>
-                                <Button 
-                                    className="flex-1 bg-[#D92D20] hover:bg-[#b91c1c] text-white"
-                                    onClick={handleUpload}
-                                    disabled={!file || loading}
-                                >
-                                    {loading ? (uploadProgress > 0 ? `Uploading ${uploadProgress}%` : "Memproses...") : "Kirim Bukti Pembayaran"}
-                                </Button>
-                            </div>
-                        </div>
-                    </Card>
+              {/* Header card */}
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="px-6 py-5 flex items-start justify-between border-b border-gray-100">
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">ID Pesanan</p>
+                    <p className="text-lg font-bold text-gray-900">#{order.orderId}</p>
+                    <p className="text-sm text-gray-500 mt-0.5">a.n. <span className="font-medium text-gray-700">{order.customerName}</span></p>
+                  </div>
+                  {status && (
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${status.cls}`}>
+                      {status.label}
+                    </span>
+                  )}
                 </div>
-            )}
 
-            {/* Step 3: Success */}
-            {step === 3 && (
-                <Card className="p-12 bg-white border-gray-100 shadow-sm text-center">
-                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <CheckCircle className="w-10 h-10 text-green-600" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Bukti Pembayaran Terkirim!</h2>
-                    <p className="text-gray-500 mb-8 max-w-md mx-auto">
-                        Terima kasih! Admin kami akan memverifikasi pembayaran Anda secepatnya. Status pesanan akan diupdate via WhatsApp/Email.
-                    </p>
-                    <div className="flex justify-center gap-4">
-                        <Button variant="outline" onClick={() => router.push('/')}>
-                            Kembali ke Beranda
-                        </Button>
-                        <Button className="bg-gray-900 text-white hover:bg-black" onClick={() => window.location.reload()}>
-                            Cek Pesanan Lain
-                        </Button>
-                    </div>
-                </Card>
-            )}
+                {/* Items */}
+                <div className="px-6 pt-4 pb-2">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                    <Package className="w-3.5 h-3.5" /> Item Pesanan
+                  </p>
+                  <div className="space-y-2.5">
+                    {order.items.map((item, idx) => (
+                      <div key={idx} className="flex justify-between items-start text-sm">
+                        <div>
+                          <p className="font-medium text-gray-900">{item.name}</p>
+                          <p className="text-xs text-gray-400">{item.qty} pcs × Rp {item.price.toLocaleString("id-ID")}</p>
+                        </div>
+                        <p className="font-semibold text-gray-900 shrink-0 ml-4">Rp {item.subtotal.toLocaleString("id-ID")}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
+                {/* Totals */}
+                <div className="mx-6 my-4 rounded-xl bg-gray-50 border border-gray-100 px-4 py-3.5 space-y-2 text-sm">
+                  <div className="flex justify-between text-gray-500">
+                    <span>Subtotal Produk</span>
+                    <span>Rp {order.itemsTotal.toLocaleString("id-ID")}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-500">
+                    <span>Ongkos Kirim</span>
+                    <span>
+                      {order.shippingCost > 0
+                        ? `Rp ${order.shippingCost.toLocaleString("id-ID")}`
+                        : <span className="text-amber-500 italic text-xs">Menunggu konfirmasi</span>}
+                    </span>
+                  </div>
+                  <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200 text-base">
+                    <span>Total Bayar</span>
+                    <span className="text-[#D92D20]">Rp {order.grandTotal.toLocaleString("id-ID")}</span>
+                  </div>
+                </div>
+
+                {/* Address */}
+                <div className="px-6 pb-5">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5" /> Alamat Pengiriman
+                  </p>
+                  <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5">{order.address}</p>
+                </div>
+              </div>
+
+              {/* Info Pengiriman - tampil saat status dikirim */}
+              {order.courierType && (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                  <div className="px-6 py-5 border-b border-gray-100">
+                    <p className="text-sm font-semibold text-gray-900">Informasi Pengiriman</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Paket Anda sedang dalam perjalanan</p>
+                  </div>
+                  <div className="p-6 space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Ekspedisi</span>
+                      <span className="font-semibold text-gray-900">{order.courierType}</span>
+                    </div>
+                    {order.trackingNumber ? (
+                      <>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-400">Nomor Resi</span>
+                        </div>
+                        <div className="bg-gray-50 border border-gray-100 rounded-xl px-5 py-4 text-center">
+                          <p className="font-bold text-gray-900 text-xl tracking-widest">{order.trackingNumber}</p>
+                        </div>
+                        <p className="text-xs text-gray-400 text-center">Gunakan nomor resi di atas untuk melacak paket di website {order.courierType}</p>
+                      </>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">Paket diantarkan langsung oleh tim kami — tidak ada nomor resi.</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Konfirmasi Penerimaan - tampil saat status dikirim */}
+              {order.status === 'dikirim' && !confirmSuccess && (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                  <div className="px-6 py-5 border-b border-gray-100">
+                    <p className="text-sm font-semibold text-gray-900">Sudah Terima Barang?</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Konfirmasi jika paket sudah tiba di tangan Anda</p>
+                  </div>
+                  <div className="p-6 space-y-4">
+                    {/* Optional photo */}
+                    <div
+                      onClick={() => receiptFileRef.current?.click()}
+                      className={`relative border-2 border-dashed rounded-xl cursor-pointer transition-colors flex flex-col items-center justify-center text-center overflow-hidden
+                        ${receiptPreview ? "border-gray-200 p-0" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50 p-8"}`}
+                    >
+                      {receiptPreview ? (
+                        <>
+                          <img src={receiptPreview} alt="Preview" className="w-full max-h-48 object-contain bg-gray-50" />
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setReceiptFile(null); setReceiptPreview(null) }}
+                            className="absolute top-2 right-2 bg-white shadow rounded-full p-1 text-gray-500 hover:text-red-500 transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <ImageIcon className="w-7 h-7 text-gray-300 mb-2" />
+                          <p className="text-sm text-gray-400">Lampirkan foto barang <span className="text-gray-300">(opsional)</span></p>
+                        </>
+                      )}
+                    </div>
+                    <input ref={receiptFileRef} type="file" accept="image/*" className="hidden" onChange={handleReceiptFileChange} />
+
+                    {confirmError && <p className="text-sm text-red-500">{confirmError}</p>}
+
+                    <button
+                      onClick={handleConfirmReceived}
+                      disabled={confirming}
+                      className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                    >
+                      {confirming
+                        ? <><Loader2 className="w-4 h-4 animate-spin" /> Memproses...</>
+                        : <><PackageCheck className="w-4 h-4" /> Barang Sudah Diterima</>
+                      }
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Selesai */}
+              {(order.status === 'selesai' || confirmSuccess) && (
+                <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6">
+                  <div className="flex gap-3 items-center">
+                    <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                      <CheckCircle className="w-5 h-5 text-emerald-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-emerald-900">Pesanan Selesai</p>
+                      <p className="text-xs text-emerald-700 mt-0.5">Terima kasih telah berbelanja di BIZSPAREPART24!</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Upload section */}
+              {alreadyPaid ? (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                  <div className="flex gap-3 items-center">
+                    <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
+                      <CheckCircle className="w-5 h-5 text-emerald-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">Bukti Pembayaran Terkirim</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Admin akan memverifikasi pembayaran Anda dalam waktu dekat.</p>
+                    </div>
+                  </div>
+                </div>
+              ) : order.shippingCost === 0 ? (
+                <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6 text-sm">
+                  <p className="font-semibold text-amber-800 mb-1">⏳ Ongkos kirim belum dikonfirmasi</p>
+                  <p className="text-amber-700">Admin sedang menghitung ongkos kirim. Anda akan mendapat email tagihan final setelah selesai.</p>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                  <div className="px-6 py-5 border-b border-gray-100">
+                    <p className="text-sm font-semibold text-gray-900">Upload Bukti Transfer</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Unggah screenshot / foto bukti transfer Anda</p>
+                  </div>
+                  <div className="p-6 space-y-4">
+                    {/* Drop area */}
+                    <div
+                      onClick={() => fileRef.current?.click()}
+                      className={`relative border-2 border-dashed rounded-xl cursor-pointer transition-colors flex flex-col items-center justify-center text-center overflow-hidden
+                        ${imagePreview ? "border-gray-200 p-0" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50 p-10"}`}
+                    >
+                      {imagePreview ? (
+                        <>
+                          <img src={imagePreview} alt="Preview" className="w-full max-h-64 object-contain bg-gray-50" />
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setImageFile(null); setImagePreview(null) }}
+                            className="absolute top-2 right-2 bg-white shadow rounded-full p-1 text-gray-500 hover:text-red-500 transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <ImageIcon className="w-8 h-8 text-gray-300 mb-3" />
+                          <p className="text-sm font-medium text-gray-500">Klik untuk memilih foto</p>
+                          <p className="text-xs text-gray-300 mt-1">JPG, PNG, WebP</p>
+                        </>
+                      )}
+                    </div>
+                    <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+
+                    {uploadError && <p className="text-sm text-red-500">{uploadError}</p>}
+
+                    <button
+                      onClick={handleUpload}
+                      disabled={!imageFile || uploading}
+                      className="w-full h-11 bg-gray-900 hover:bg-gray-700 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                    >
+                      {uploading
+                        ? <><Loader2 className="w-4 h-4 animate-spin" /> Mengunggah...</>
+                        : <><Upload className="w-4 h-4" /> Kirim Bukti Pembayaran</>}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          )}
         </div>
       </div>
 

@@ -3,6 +3,7 @@ import { HealthController } from '../controllers/health.controller';
 import adminRoutes from './admin.routes';
 import productRoutes from './product.routes';
 import orderRoutes from './order.routes';
+import regionRoutes from './region.routes';
 
 import categoryRoutes from './category.routes';
 import makeRoutes from './make.routes';
@@ -19,5 +20,6 @@ router.use('/categories', categoryRoutes); // New Category Routes
 router.use('/makes', makeRoutes); // Make Routes
 router.use('/models', modelRoutes); // Model Routes
 router.use('/orders', orderRoutes);
+router.use('/v1/regions', regionRoutes);
 
 export default router;

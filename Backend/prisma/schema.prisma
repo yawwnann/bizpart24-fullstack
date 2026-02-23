@@ -69,6 +69,14 @@ model Product {
   updatedAt   DateTime    @updatedAt
   
   orderItems  OrderItem[]
+
+  // ── Indexes ─────────────────────────────────────────────
+  @@index([categoryId])          // FK lookup for category filter
+  @@index([makeId])              // FK lookup for make filter
+  @@index([modelId])             // FK lookup for model filter
+  @@index([name])                // Search by product name
+  @@index([price])               // Sort/filter by price
+  @@index([stock])               // Filter low-stock products
 }
 
 model Order {
@@ -83,12 +91,20 @@ model Order {
   shippingCost Float       @default(0)
   grandTotal   Float
   paymentProof String?
-  status       String      @default("menunggu_ongkir") // menunggu_ongkir, menunggu_pembayaran, diproses, dikirim, selesai
+  trackingNumber String?   // Nomor resi pengiriman
+  courierType    String?   // Jenis ekspedisi: JNE, JNT, SiCepat, Anteraja, Antar Sendiri, dll
+  status       String      @default("menunggu_ongkir")
   
   items        OrderItem[]
   
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+
+  // ── Indexes ─────────────────────────────────────────────
+  @@index([status])              // Filter orders by status
+  @@index([createdAt])           // ORDER BY createdAt DESC (admin list)
+  @@index([status, createdAt])   // Combined: status filter + date sort
+  @@index([email])               // Lookup orders by customer email
 }
 
 model OrderItem {
@@ -103,4 +119,8 @@ model OrderItem {
   price     Float
   qty       Int
   subtotal  Float
+
+  // ── Indexes ─────────────────────────────────────────────
+  @@index([orderId])             // Used in every include: { items: true }
+  @@index([productId])           // FK lookup for product relation
 }

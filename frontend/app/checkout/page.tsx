@@ -10,6 +10,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, CheckCircle } from "lucide-react"
 import Link from "next/link"
+import api from "@/lib/api"
 
 export default function CheckoutPage() {
   const { cartItems, totalPrice, clearCart } = useCart()
@@ -21,19 +22,67 @@ export default function CheckoutPage() {
     address: "",
   })
 
-  // Redirect if cart is empty
-  useEffect(() => {
-    if (cartItems.length === 0) {
-      router.push('/cart')
-    }
-  }, [cartItems, router])
+  // Region States
+  const [provinces, setProvinces] = useState<any[]>([])
+  const [regencies, setRegencies] = useState<any[]>([])
+  const [districts, setDistricts] = useState<any[]>([])
 
-  if (cartItems.length === 0) {
-     return null
-  }
+  const [selectedProvince, setSelectedProvince] = useState({ code: "", name: "" })
+  const [selectedRegency, setSelectedRegency] = useState({ code: "", name: "" })
+  const [selectedDistrict, setSelectedDistrict] = useState({ code: "", name: "" })
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Fetch Provinces
+  useEffect(() => {
+    api.get("/v1/regions/provinces")
+      .then(res => {
+          if (res.data.success) setProvinces(res.data.data)
+      })
+      .catch(err => console.error(err))
+  }, [])
+
+  // Fetch Regencies
+  useEffect(() => {
+    if (selectedProvince.code) {
+      api.get(`/v1/regions/provinces/${selectedProvince.code}/regencies`)
+        .then(res => {
+            if (res.data.success) setRegencies(res.data.data)
+        })
+        .catch(err => console.error(err))
+    } else {
+      setRegencies([])
+      setSelectedRegency({ code: "", name: "" })
+    }
+  }, [selectedProvince.code])
+
+  // Fetch Districts
+  useEffect(() => {
+    if (selectedRegency.code) {
+      api.get(`/v1/regions/regencies/${selectedRegency.code}/districts`)
+        .then(res => {
+            if (res.data.success) setDistricts(res.data.data)
+        })
+        .catch(err => console.error(err))
+    } else {
+      setDistricts([])
+      setSelectedDistrict({ code: "", name: "" })
+    }
+  }, [selectedRegency.code])
+
+  const [isSuccess, setIsSuccess] = useState(false)
+
+  // Redirect if cart is empty and not in success state
+  useEffect(() => {
+    if (cartItems.length === 0 && !isSuccess) {
+      router.push('/cart')
+    }
+  }, [cartItems, router, isSuccess])
+
+  if (cartItems.length === 0 && !isSuccess) {
+     return null
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -45,20 +94,23 @@ export default function CheckoutPage() {
     setError(null)
 
     try {
+      const fullAddress = `${formData.address}, ${selectedDistrict.name}, ${selectedRegency.name}, ${selectedProvince.name}`
+
       const payload = {
-        name: formData.name, // Backend maps this to customerName
+        customerName: formData.name, // Matches backend validation
         email: formData.email,
         phone: formData.phone,
-        address: formData.address,
-        items: cartItems.map(item => ({
+        address: fullAddress,
+        items: cartItems.map((item: any) => ({
           productId: item.id,
           qty: item.quantity
         }))
       }
 
-      const response = await import("@/lib/api").then(mod => mod.default.post('/orders/create', payload))
+      const response = await api.post('/orders/create', payload)
 
       if (response.data.success) {
+        setIsSuccess(true) // Prevent automatic redirect
         clearCart()
         router.push("/checkout/success")
       }
@@ -132,14 +184,73 @@ export default function CheckoutPage() {
                         />
                     </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Provinsi</label>
+                            <select 
+                                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300"
+                                value={selectedProvince.code}
+                                onChange={(e) => {
+                                    const prov = provinces.find(p => p.code === e.target.value)
+                                    setSelectedProvince({ code: e.target.value, name: prov?.name || "" })
+                                    setSelectedRegency({ code: "", name: "" })
+                                    setSelectedDistrict({ code: "", name: "" })
+                                }}
+                                required
+                            >
+                                <option value="" disabled>Pilih Provinsi</option>
+                                {provinces.map(p => (
+                                    <option key={p.code} value={p.code}>{p.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Kabupaten/Kota</label>
+                            <select 
+                                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300 disabled:opacity-50"
+                                value={selectedRegency.code}
+                                onChange={(e) => {
+                                    const reg = regencies.find(r => r.code === e.target.value)
+                                    setSelectedRegency({ code: e.target.value, name: reg?.name || "" })
+                                    setSelectedDistrict({ code: "", name: "" })
+                                }}
+                                required
+                                disabled={!selectedProvince.code}
+                            >
+                                <option value="" disabled>Pilih Kabupaten/Kota</option>
+                                {regencies.map(r => (
+                                    <option key={r.code} value={r.code}>{r.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Kecamatan</label>
+                            <select 
+                                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300 disabled:opacity-50"
+                                value={selectedDistrict.code}
+                                onChange={(e) => {
+                                    const dist = districts.find(d => d.code === e.target.value)
+                                    setSelectedDistrict({ code: e.target.value, name: dist?.name || "" })
+                                }}
+                                required
+                                disabled={!selectedRegency.code}
+                            >
+                                <option value="" disabled>Pilih Kecamatan</option>
+                                {districts.map(d => (
+                                    <option key={d.code} value={d.code}>{d.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
                     <div className="space-y-2">
-                         <label htmlFor="address" className="text-sm font-medium text-gray-700">Alamat Lengkap</label>
+                         <label htmlFor="address" className="text-sm font-medium text-gray-700">Detail Alamat (Desa/Kelurahan, Jalan, RT/RW, Patokan)</label>
                          <textarea 
                             id="address" 
                             name="address" 
                             required 
-                            placeholder="Alamat lengkap, nama jalan, nomor rumah, detail lainnya..."
-                            className="w-full min-h-[120px] px-3 bg-gray-50 border-gray-200 text-gray-900 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-transparent"
+                            placeholder="Contoh: Desa Suka Maju, Jl. Sudirman No. 123, RT 01/RW 02, Patokan depan minimarket..."
+                            className="w-full min-h-[80px] px-3 bg-gray-50 border border-gray-200 text-gray-900 py-2 text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300"
                             value={formData.address}
                             // @ts-ignore - native textarea change event compatible
                             onChange={handleChange}
@@ -158,7 +269,7 @@ export default function CheckoutPage() {
                     </h2>
                     
                     <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-2">
-                        {cartItems.map((item) => (
+                        {cartItems.map((item: any) => (
                              <div key={item.id} className="flex gap-3 text-sm">
                                 <div className="w-12 h-12 bg-gray-100 rounded shrink-0 overflow-hidden">
                                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />

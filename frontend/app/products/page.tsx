@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { ProductCard } from "@/components/ui/ProductCard"
+import { ProductCardSkeleton } from "@/components/ui/ProductCardSkeleton"
+import { CategoryCardSkeleton } from "@/components/ui/CategoryCardSkeleton"
 import { Card } from "@/components/ui/Card"
 import { Filter, ChevronDown, Loader2, Settings } from "lucide-react"
 import { Button } from "@/components/ui/Button"
@@ -17,17 +19,27 @@ function ProductCatalogContent() {
   const searchParams = useSearchParams()
   const categoryParam = searchParams.get("category")
   const searchParam = searchParams.get("search")
+  const pageParam = searchParams.get("page")
 
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pagination, setPagination] = useState({
+    total: 0,
+    totalPages: 0,
+    currentPage: 1,
+    limit: 10,
+    hasNext: false,
+    hasPrev: false
+  })
   const { categories } = useFetchCategories()
 
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true)
       try {
-        const params: any = {}
+        const params: any = { page: currentPage }
         if (categoryParam) params.category = categoryParam
         if (searchParam) params.search = searchParam
 
@@ -36,7 +48,6 @@ function ProductCatalogContent() {
         if (response.data.success) {
           const mappedProducts = response.data.data.map((item: any) => ({
             ...item,
-            id: item._id, // Map _id to id
             rating: item.rating || 4.5,
             reviews: item.reviews || 0,
             originalPrice: null,
@@ -44,6 +55,11 @@ function ProductCatalogContent() {
             isNew: false
           }))
           setProducts(mappedProducts)
+          
+          // Store pagination metadata
+          if (response.data.pagination) {
+            setPagination(response.data.pagination)
+          }
         }
       } catch (err) {
         console.error("Failed to fetch products", err)
@@ -54,6 +70,11 @@ function ProductCatalogContent() {
     }
 
     fetchProducts()
+  }, [categoryParam, searchParam, currentPage])
+
+  // Reset to page 1 when category or search changes
+  useEffect(() => {
+    setCurrentPage(1)
   }, [categoryParam, searchParam])
 
   // Dynamic Title
@@ -88,16 +109,23 @@ function ProductCatalogContent() {
             {/* Category Quick Links (Visible when no category selected) */}
             {!categoryParam && (
                 <div className="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                    {categories.map((cat) => (
-                        <Link key={cat._id} href={`/products?category=${cat.name.toLowerCase()}`} className="group">
-                            <Card className="h-full border border-gray-100 hover:border-[#D92D20] hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center p-4 text-center bg-white rounded-xl">
-                                <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-red-50 transition-colors">
-                                    <Settings className="w-5 h-5 text-gray-700 group-hover:text-[#D92D20] transition-colors" />
-                                </div>
-                                <span className="text-xs font-bold text-gray-700 group-hover:text-black uppercase">{cat.name}</span>
-                            </Card>
-                        </Link>
-                    ))}
+                    {loading ? (
+                        // Category Skeletons
+                        Array.from({ length: 6 }).map((_, i) => (
+                            <CategoryCardSkeleton key={i} />
+                        ))
+                    ) : (
+                        categories.map((cat) => (
+                            <Link key={cat.id} href={`/products?category=${cat.name.toLowerCase()}`} className="group">
+                                <Card className="h-full border border-gray-100 hover:border-[#D92D20] hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center p-4 text-center bg-white rounded-xl">
+                                    <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-red-50 transition-colors">
+                                        <Settings className="w-5 h-5 text-gray-700 group-hover:text-[#D92D20] transition-colors" />
+                                    </div>
+                                    <span className="text-xs font-bold text-gray-700 group-hover:text-black uppercase">{cat.name}</span>
+                                </Card>
+                            </Link>
+                        ))
+                    )}
                 </div>
             )}
         </div>
@@ -118,7 +146,7 @@ function ProductCatalogContent() {
                         </Link>
                         {categories.map((cat) => (
                             <Link 
-                                key={cat._id} 
+                                key={cat.id} 
                                 href={`/products?category=${cat.name.toLowerCase()}`}
                                 className={`block text-sm ${categoryParam && cat.name.toLowerCase() === categoryParam.toLowerCase() ? 'font-bold text-[#D92D20]' : 'text-gray-600 hover:text-[#D92D20]'} transition-all`}
                             >
@@ -143,8 +171,10 @@ function ProductCatalogContent() {
             {/* Product Grid */}
             <div className="flex-1">
                 {loading ? (
-                    <div className="flex justify-center py-20">
-                        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                        {Array.from({ length: 10 }).map((_, i) => (
+                            <ProductCardSkeleton key={i} />
+                        ))}
                     </div>
                 ) : error ? (
                     <div className="text-center py-20 text-red-500">
@@ -173,15 +203,63 @@ function ProductCatalogContent() {
                 )}
                 
                 {/* Pagination */}
-                <div className="mt-12 flex justify-center">
-                    <nav className="flex items-center gap-2">
-                         <Button variant="outline" className="w-10 h-10 p-0" disabled>&lt;</Button>
-                         <Button className="w-10 h-10 p-0 bg-[#D92D20] text-white hover:bg-[#b91c1c]">1</Button>
-                         <Button variant="outline" className="w-10 h-10 p-0">2</Button>
-                         <Button variant="outline" className="w-10 h-10 p-0">3</Button>
-                         <Button variant="outline" className="w-10 h-10 p-0">&gt;</Button>
-                    </nav>
-                </div>
+                {!loading && !error && pagination.totalPages > 1 && (
+                    <div className="mt-12 flex flex-col items-center gap-4">
+                        <div className="text-sm text-gray-500">
+                            Halaman {pagination.currentPage} dari {pagination.totalPages} 
+                            <span className="mx-2">•</span>
+                            Total {pagination.total} produk
+                        </div>
+                        <nav className="flex items-center gap-2">
+                            {/* Previous Button */}
+                            <Button 
+                                variant="outline" 
+                                className="w-10 h-10 p-0" 
+                                disabled={!pagination.hasPrev}
+                                onClick={() => setCurrentPage(prev => prev - 1)}
+                            >
+                                &lt;
+                            </Button>
+                            
+                            {/* Page Numbers */}
+                            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+                                .filter(pageNum => {
+                                    // Show first page, last page, current page, and pages around current
+                                    return pageNum === 1 || 
+                                           pageNum === pagination.totalPages || 
+                                           Math.abs(pageNum - pagination.currentPage) <= 1
+                                })
+                                .map((pageNum, idx, arr) => {
+                                    // Add ellipsis if there's a gap
+                                    const prevPageNum = arr[idx - 1]
+                                    const showEllipsis = prevPageNum && pageNum - prevPageNum > 1
+                                    
+                                    return (
+                                        <div key={pageNum} className="flex items-center gap-2">
+                                            {showEllipsis && <span className="text-gray-400">...</span>}
+                                            <Button 
+                                                variant={pageNum === pagination.currentPage ? "primary" : "outline"}
+                                                className={`w-10 h-10 p-0 ${pageNum === pagination.currentPage ? 'bg-[#D92D20] text-white hover:bg-[#b91c1c]' : ''}`}
+                                                onClick={() => setCurrentPage(pageNum)}
+                                            >
+                                                {pageNum}
+                                            </Button>
+                                        </div>
+                                    )
+                                })}
+                            
+                            {/* Next Button */}
+                            <Button 
+                                variant="outline" 
+                                className="w-10 h-10 p-0"
+                                disabled={!pagination.hasNext}
+                                onClick={() => setCurrentPage(prev => prev + 1)}
+                            >
+                                &gt;
+                            </Button>
+                        </nav>
+                    </div>
+                )}
             </div>
 
         </div>

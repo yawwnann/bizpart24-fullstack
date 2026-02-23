@@ -12,9 +12,12 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "seed": "ts-node src/utils/seeder.ts",
-    "seed:admin": "ts-node src/utils/create_admin.ts"
+    "seed:admin": "ts-node src/utils/create_admin.ts",
+    "upload:images": "ts-node src/utils/uploadProductImages.ts",
+    "db:clear": "ts-node src/utils/clearDatabase.ts"
   },
   "dependencies": {
+    "axios": "^1.7.9",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.9.0",
     "cors": "^2.8.5",

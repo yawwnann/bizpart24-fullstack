@@ -26,8 +26,8 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle errors globally if needed
-    console.error('API Error:', error.response?.data?.message || error.message);
+    // Let components handle errors themselves
+    // Don't log to console here to avoid duplicate error messages
     return Promise.reject(error);
   }
 );
