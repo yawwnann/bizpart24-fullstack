@@ -4,8 +4,11 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@bizsparepart24.com'; // Change to real admin email
+const FROM_EMAIL   = process.env.RESEND_FROM_EMAIL  || 'onboarding@resend.dev';
+const ADMIN_EMAIL  = process.env.ADMIN_EMAIL         || 'admin@bizsparepart24.com';
+const BANK_NAME    = process.env.BANK_NAME           || 'BCA';
+const BANK_ACCOUNT = process.env.BANK_ACCOUNT_NUMBER || '1234567890';
+const BANK_HOLDER  = process.env.BANK_ACCOUNT_NAME   || 'PT BIZSPAREPART24';
 
 export class MailService {
 
@@ -140,12 +143,11 @@ export class MailService {
                 </table>
               </div>
 
-              <h3>Instruksi Pembayaran:</h3>
-              <p>Silakan transfer total pembayaran ke rekening berikut:</p>
-              <div style="border: 1px dashed #ccc; padding: 10px; background-color: #fff;">
-                <p style="margin: 5px 0;"><strong>BCA: 1234567890</strong></p>
-                <p style="margin: 5px 0;"><strong>Mandiri: 0987654321</strong></p>
-                <p style="margin: 5px 0;">Atas Nama: <strong>PT BIZSPAREPART24</strong></p>
+              <h3 style="margin-top: 0; font-size: 14px; color: #666;">INSTRUKSI PEMBAYARAN</h3>
+              <div style="background: #fff; border: 1.5px solid #D92D20; border-radius: 8px; padding: 16px; margin: 0;">
+                <p style="margin: 0 0 4px; font-size: 13px; color: #666;">Transfer ke rekening:</p>
+                <p style="margin: 0 0 2px; font-size: 20px; font-weight: bold; letter-spacing: 2px; color: #111;">${BANK_ACCOUNT}</p>
+                <p style="margin: 0; font-size: 13px; color: #555;">${BANK_NAME} — a.n. <strong>${BANK_HOLDER}</strong></p>
               </div>
 
               <p style="margin-top: 20px;">Setelah transfer, silakan konfirmasi pembayaran Anda disini:</p>
