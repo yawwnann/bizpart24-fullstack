@@ -1,283 +1,426 @@
-"use client"
+"use client";
 
-import { useEffect, useState, Suspense } from "react"
-import { useSearchParams } from "next/navigation"
-import { Navbar } from "@/components/layout/Navbar"
-import { Footer } from "@/components/layout/Footer"
-import { ProductCard } from "@/components/ui/ProductCard"
-import { ProductCardSkeleton } from "@/components/ui/ProductCardSkeleton"
-import { CategoryCardSkeleton } from "@/components/ui/CategoryCardSkeleton"
-import { Card } from "@/components/ui/Card"
-import { Filter, ChevronDown, Loader2, Settings } from "lucide-react"
-import { Button } from "@/components/ui/Button"
-import Link from "next/link"
-import api from "@/lib/api"
-import { useFetchCategories } from "@/hooks/useFetchCategories"
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
+import { ProductCard } from "@/components/ui/ProductCard";
+import { ProductCardSkeleton } from "@/components/ui/ProductCardSkeleton";
+import { Filter, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import Link from "next/link";
+import api from "@/lib/api";
+import { useFetchCategories } from "@/hooks/useFetchCategories";
+
+interface ProductItem {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  image: string;
+  rating: number;
+  reviews: number;
+  originalPrice?: number | null;
+  discount?: string | null;
+  isNew?: boolean;
+  [key: string]: unknown;
+}
+
+interface ApiProductResponse {
+  id: string;
+  name: string;
+  price: number;
+  category?: { name: string } | string;
+  image?: string;
+  rating?: number;
+  reviews?: number;
+  originalPrice?: number | null;
+  discount?: string | null;
+  isNew?: boolean;
+}
 
 // Create a wrapper component for the content that uses useSearchParams
 function ProductCatalogContent() {
-  const searchParams = useSearchParams()
-  const categoryParam = searchParams.get("category")
-  const searchParam = searchParams.get("search")
-  const pageParam = searchParams.get("page")
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get("category");
+  const searchParam = searchParams.get("search");
+  const sortParam = searchParams.get("sort") || "newest";
+  const minPriceParam = searchParams.get("minPrice") || "";
+  const maxPriceParam = searchParams.get("maxPrice") || "";
 
-  const [products, setProducts] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [currentPage, setCurrentPage] = useState(1)
+  const [products, setProducts] = useState<ProductItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({
     total: 0,
     totalPages: 0,
     currentPage: 1,
-    limit: 10,
+    limit: 12,
     hasNext: false,
-    hasPrev: false
-  })
-  const { categories } = useFetchCategories()
+    hasPrev: false,
+  });
+
+  const { categories } = useFetchCategories();
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true)
-      try {
-        const params: any = { page: currentPage }
-        if (categoryParam) params.category = categoryParam
-        if (searchParam) params.search = searchParam
+    // Reset to page 1 when any filter changes
+    setCurrentPage(1);
+  }, [categoryParam, searchParam, sortParam, minPriceParam, maxPriceParam]);
 
-        const response = await api.get('/products', { params })
-        
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const params: Record<string, string | number> = {
+          page: currentPage,
+          limit: 12,
+          sort: sortParam,
+        };
+        if (categoryParam) params.category = categoryParam;
+        if (searchParam) params.search = searchParam;
+        if (minPriceParam) params.minPrice = minPriceParam;
+        if (maxPriceParam) params.maxPrice = maxPriceParam;
+
+        const response = await api.get("/products", {
+          params,
+          signal: controller.signal,
+        });
+
         if (response.data.success) {
-          const mappedProducts = response.data.data.map((item: any) => ({
-            ...item,
-            rating: item.rating || 4.5,
-            reviews: item.reviews || 0,
-            originalPrice: null,
-            discount: null,
-            isNew: false
-          }))
-          setProducts(mappedProducts)
-          
-          // Store pagination metadata
+          const mappedProducts: ProductItem[] = response.data.data.map(
+            (item: ApiProductResponse) => ({
+              ...item,
+              category:
+                typeof item.category === "object" && item.category?.name
+                  ? item.category.name
+                  : typeof item.category === "string"
+                    ? item.category
+                    : "",
+              image: item.image ?? "",
+              rating: item.rating ?? 4.5,
+              reviews: item.reviews ?? 0,
+              originalPrice: item.originalPrice ?? null,
+              discount: item.discount ?? null,
+              isNew: item.isNew ?? false,
+            }),
+          );
+          setProducts(mappedProducts);
+
           if (response.data.pagination) {
-            setPagination(response.data.pagination)
+            setPagination(response.data.pagination);
           }
         }
-      } catch (err) {
-        console.error("Failed to fetch products", err)
-        setError("Gagal memuat produk.")
+      } catch (err: unknown) {
+        // Ignore abort errors — they're intentional cleanup
+        if (
+          (err as { code?: string })?.code === "ERR_CANCELED" ||
+          (err as { name?: string })?.name === "AbortError" ||
+          (err as { name?: string })?.name === "CanceledError"
+        )
+          return;
+        console.error("Failed to fetch products", err);
+        setError("Gagal memuat produk.");
       } finally {
-        setLoading(false)
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
+    };
+
+    fetchProducts();
+
+    return () => {
+      controller.abort();
+    };
+  }, [
+    categoryParam,
+    searchParam,
+    currentPage,
+    sortParam,
+    minPriceParam,
+    maxPriceParam,
+  ]);
+
+  const PRICE_RANGES = [
+    { label: "Semua Harga", min: "", max: "" },
+    { label: "Di bawah Rp 100.000", min: "0", max: "100000" },
+    { label: "Rp 100.000 – Rp 300.000", min: "100000", max: "300000" },
+    { label: "Rp 300.000 – Rp 1.000.000", min: "300000", max: "1000000" },
+    { label: "Rp 1.000.000 – Rp 3.000.000", min: "1000000", max: "3000000" },
+    { label: "Di atas Rp 3.000.000", min: "3000000", max: "" },
+  ];
+
+  const selectedPriceRange = `${minPriceParam}-${maxPriceParam}`;
+
+  const handlePriceRange = (value: string) => {
+    const range = PRICE_RANGES.find((r) => `${r.min}-${r.max}` === value);
+    const params = new URLSearchParams(searchParams.toString());
+    if (range && (range.min || range.max)) {
+      if (range.min) params.set("minPrice", range.min);
+      else params.delete("minPrice");
+      if (range.max) params.set("maxPrice", range.max);
+      else params.delete("maxPrice");
+    } else {
+      params.delete("minPrice");
+      params.delete("maxPrice");
     }
+    params.set("page", "1");
+    router.push(`/products?${params.toString()}`);
+  };
 
-    fetchProducts()
-  }, [categoryParam, searchParam, currentPage])
-
-  // Reset to page 1 when category or search changes
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [categoryParam, searchParam])
+  const handleSort = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("sort", value);
+    params.set("page", "1"); // Reset to page 1
+    router.push(`/products?${params.toString()}`);
+  };
 
   // Dynamic Title
   const title = categoryParam
-    ? `Kategori: ${categories.find(c => c.name.toLowerCase() === categoryParam.toLowerCase())?.name || categoryParam}`
-    : "Katalog Suku Cadang"
+    ? `Kategori: ${categories.find((c) => c.name.toLowerCase() === categoryParam.toLowerCase())?.name || categoryParam}`
+    : searchParam
+      ? `Hasil Pencarian: "${searchParam}"`
+      : "Katalog Suku Cadang";
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
-      
+
       {/* Header Section */}
       <div className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4 md:px-8 py-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-                    <p className="text-gray-500 text-sm mt-1">
-                        {categoryParam 
-                            ? `Menampilkan ${products.length} produk untuk kategori "${categoryParam}"`
-                            : "Jelajahi semua kategori dan produk berkualitas untuk kendaraan Anda."}
-                    </p>
-                </div>
-                <div className="flex items-center gap-2">
-                     <span className="text-sm text-gray-500">Urutkan:</span>
-                     <Button variant="outline" className="h-9 text-sm gap-2">
-                        Paling Sesuai <ChevronDown className="w-4 h-4" />
-                     </Button>
-                </div>
+        <div className="container mx-auto px-4 md:px-8 py-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+              <p className="text-gray-500 text-sm mt-1">
+                {categoryParam
+                  ? `Menampilkan ${pagination.total} produk untuk kategori "${categoryParam}"`
+                  : "Jelajahi semua kategori dan produk berkualitas untuk kendaraan Anda."}
+              </p>
             </div>
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Sort */}
+              <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 h-10">
+                <span className="text-xs text-gray-900 font-medium whitespace-nowrap">
+                  Urutkan
+                </span>
+                <div className="w-px h-4 bg-gray-200" />
+                <select
+                  value={sortParam}
+                  onChange={(e) => handleSort(e.target.value)}
+                  className="text-sm text-gray-700 border-0 focus:ring-0 cursor-pointer bg-transparent pr-1 font-medium"
+                >
+                  <option value="newest">Terbaru</option>
+                  <option value="oldest">Terlama</option>
+                  <option value="price_asc">Harga Terendah</option>
+                  <option value="price_desc">Harga Tertinggi</option>
+                  <option value="name_asc">Nama (A-Z)</option>
+                  <option value="name_desc">Nama (Z-A)</option>
+                </select>
+              </div>
 
-            {/* Category Quick Links (Visible when no category selected) */}
-            {!categoryParam && (
-                <div className="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                    {loading ? (
-                        // Category Skeletons
-                        Array.from({ length: 6 }).map((_, i) => (
-                            <CategoryCardSkeleton key={i} />
-                        ))
-                    ) : (
-                        categories.map((cat) => (
-                            <Link key={cat.id} href={`/products?category=${cat.name.toLowerCase()}`} className="group">
-                                <Card className="h-full border border-gray-100 hover:border-[#D92D20] hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center p-4 text-center bg-white rounded-xl">
-                                    <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-red-50 transition-colors">
-                                        <Settings className="w-5 h-5 text-gray-700 group-hover:text-[#D92D20] transition-colors" />
-                                    </div>
-                                    <span className="text-xs font-bold text-gray-700 group-hover:text-black uppercase">{cat.name}</span>
-                                </Card>
-                            </Link>
-                        ))
-                    )}
-                </div>
-            )}
+              {/* Price Range */}
+              <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 h-10">
+                <span className="text-xs text-gray-900 font-medium whitespace-nowrap">
+                  Harga
+                </span>
+                <div className="w-px h-4 bg-gray-200" />
+                <select
+                  value={selectedPriceRange}
+                  onChange={(e) => handlePriceRange(e.target.value)}
+                  className="text-sm text-gray-700 border-0 focus:ring-0 cursor-pointer bg-transparent pr-1 font-medium"
+                >
+                  {PRICE_RANGES.map((r) => (
+                    <option
+                      key={`${r.min}-${r.max}`}
+                      value={`${r.min}-${r.max}`}
+                    >
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 md:px-8 py-8 flex-1">
-        <div className="flex flex-col md:flex-row gap-8">
-            
-            {/* Sidebar Filters */}
-            <aside className="w-full md:w-64 shrink-0 space-y-8">
-                <div>
-                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <Filter className="w-4 h-4" /> Filter Kategori
-                    </h3>
-                    <div className="space-y-2">
-                        <Link href="/products" className={`block text-sm ${!categoryParam ? 'font-bold text-[#D92D20]' : 'text-gray-600 hover:text-[#D92D20]'}`}>
-                            Semua Kategori
-                        </Link>
-                        {categories.map((cat) => (
-                            <Link 
-                                key={cat.id} 
-                                href={`/products?category=${cat.name.toLowerCase()}`}
-                                className={`block text-sm ${categoryParam && cat.name.toLowerCase() === categoryParam.toLowerCase() ? 'font-bold text-[#D92D20]' : 'text-gray-600 hover:text-[#D92D20]'} transition-all`}
-                            >
-                                {cat.name}
-                            </Link>
-                        ))}
-                    </div>
+        <div className="flex flex-col md:flex-row md:items-start gap-8">
+          {/* Sidebar */}
+          <aside className="w-full md:w-64 shrink-0 md:sticky md:top-8 md:self-start">
+            <div className="space-y-8">
+              <div>
+                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <Filter className="w-4 h-4" /> Filter Kategori
+                </h3>
+                <div className="space-y-1.5">
+                  <Link
+                    href="/products"
+                    className={`block text-sm px-2 py-1 rounded-md transition-all ${
+                      !categoryParam
+                        ? "font-bold text-[#D92D20] bg-red-50"
+                        : "text-gray-600 hover:text-[#D92D20] hover:bg-gray-50"
+                    }`}
+                  >
+                    Semua Kategori
+                  </Link>
+                  {categories.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={`/products?category=${cat.name.toLowerCase()}`}
+                      className={`block text-sm px-2 py-1 rounded-md transition-all ${
+                        categoryParam &&
+                        cat.name.toLowerCase() === categoryParam.toLowerCase()
+                          ? "font-bold text-[#D92D20] bg-red-50"
+                          : "text-gray-600 hover:text-[#D92D20] hover:bg-gray-50"
+                      }`}
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
                 </div>
-
-                 <div>
-                    <h3 className="font-bold text-gray-900 mb-4">Rentang Harga</h3>
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-2">
-                            <input type="number" placeholder="Min" className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:border-[#D92D20]" />
-                            <input type="number" placeholder="Max" className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:border-[#D92D20]" />
-                        </div>
-                        <Button className="w-full bg-gray-900 hover:bg-[#D92D20] text-white h-9 text-sm">Terapkan</Button>
-                    </div>
-                </div>
-            </aside>
-
-            {/* Product Grid */}
-            <div className="flex-1">
-                {loading ? (
-                    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                        {Array.from({ length: 10 }).map((_, i) => (
-                            <ProductCardSkeleton key={i} />
-                        ))}
-                    </div>
-                ) : error ? (
-                    <div className="text-center py-20 text-red-500">
-                        <p>{error}</p>
-                        <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>
-                            Coba Lagi
-                        </Button>
-                    </div>
-                ) : products.length > 0 ? (
-                    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                        {products.map((product) => (
-                            <div key={product.id} className="h-full">
-                                <Link href={`/products/${product.id}`} className="block h-full"> 
-                                    <ProductCard product={product} />
-                                </Link>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
-                        <p className="text-gray-500">Tidak ada produk ditemukan untuk kategori ini.</p>
-                        <Button variant="outline" className="mt-4" asChild>
-                            <Link href="/products">Lihat Semua Produk</Link>
-                        </Button>
-                    </div>
-                )}
-                
-                {/* Pagination */}
-                {!loading && !error && pagination.totalPages > 1 && (
-                    <div className="mt-12 flex flex-col items-center gap-4">
-                        <div className="text-sm text-gray-500">
-                            Halaman {pagination.currentPage} dari {pagination.totalPages} 
-                            <span className="mx-2">•</span>
-                            Total {pagination.total} produk
-                        </div>
-                        <nav className="flex items-center gap-2">
-                            {/* Previous Button */}
-                            <Button 
-                                variant="outline" 
-                                className="w-10 h-10 p-0" 
-                                disabled={!pagination.hasPrev}
-                                onClick={() => setCurrentPage(prev => prev - 1)}
-                            >
-                                &lt;
-                            </Button>
-                            
-                            {/* Page Numbers */}
-                            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
-                                .filter(pageNum => {
-                                    // Show first page, last page, current page, and pages around current
-                                    return pageNum === 1 || 
-                                           pageNum === pagination.totalPages || 
-                                           Math.abs(pageNum - pagination.currentPage) <= 1
-                                })
-                                .map((pageNum, idx, arr) => {
-                                    // Add ellipsis if there's a gap
-                                    const prevPageNum = arr[idx - 1]
-                                    const showEllipsis = prevPageNum && pageNum - prevPageNum > 1
-                                    
-                                    return (
-                                        <div key={pageNum} className="flex items-center gap-2">
-                                            {showEllipsis && <span className="text-gray-400">...</span>}
-                                            <Button 
-                                                variant={pageNum === pagination.currentPage ? "primary" : "outline"}
-                                                className={`w-10 h-10 p-0 ${pageNum === pagination.currentPage ? 'bg-[#D92D20] text-white hover:bg-[#b91c1c]' : ''}`}
-                                                onClick={() => setCurrentPage(pageNum)}
-                                            >
-                                                {pageNum}
-                                            </Button>
-                                        </div>
-                                    )
-                                })}
-                            
-                            {/* Next Button */}
-                            <Button 
-                                variant="outline" 
-                                className="w-10 h-10 p-0"
-                                disabled={!pagination.hasNext}
-                                onClick={() => setCurrentPage(prev => prev + 1)}
-                            >
-                                &gt;
-                            </Button>
-                        </nav>
-                    </div>
-                )}
+              </div>
             </div>
+          </aside>
 
+          {/* Product Grid */}
+          <div className="flex-1">
+            {loading ? (
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <ProductCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : error ? (
+              <div className="text-center py-20 text-red-500">
+                <p>{error}</p>
+                <Button
+                  variant="outline"
+                  className="mt-4"
+                  onClick={() => window.location.reload()}
+                >
+                  Coba Lagi
+                </Button>
+              </div>
+            ) : products.length > 0 ? (
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                {products.map((product) => (
+                  <div key={product.id} className="h-full">
+                    <Link
+                      href={`/products/${product.id}`}
+                      className="block h-full"
+                    >
+                      <ProductCard product={product} />
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
+                <p className="text-gray-500">
+                  Tidak ada produk ditemukan untuk kategori ini.
+                </p>
+                <Button variant="outline" className="mt-4" asChild>
+                  <Link href="/products">Lihat Semua Produk</Link>
+                </Button>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {!loading && !error && pagination.totalPages > 1 && (
+              <div className="mt-12 flex flex-col items-center gap-4">
+                <div className="text-sm text-gray-500">
+                  Halaman {pagination.currentPage} dari {pagination.totalPages}
+                  <span className="mx-2">•</span>
+                  Total {pagination.total} produk
+                </div>
+                <nav className="flex items-center gap-2">
+                  {/* Previous Button */}
+                  <Button
+                    variant="outline"
+                    className="w-10 h-10 p-0"
+                    disabled={!pagination.hasPrev}
+                    onClick={() => setCurrentPage((prev) => prev - 1)}
+                  >
+                    &lt;
+                  </Button>
+
+                  {/* Page Numbers */}
+                  {Array.from(
+                    { length: pagination.totalPages },
+                    (_, i) => i + 1,
+                  )
+                    .filter((pageNum) => {
+                      // Show first page, last page, current page, and pages around current
+                      return (
+                        pageNum === 1 ||
+                        pageNum === pagination.totalPages ||
+                        Math.abs(pageNum - pagination.currentPage) <= 1
+                      );
+                    })
+                    .map((pageNum, idx, arr) => {
+                      // Add ellipsis if there's a gap
+                      const prevPageNum = arr[idx - 1];
+                      const showEllipsis =
+                        prevPageNum && pageNum - prevPageNum > 1;
+
+                      return (
+                        <div key={pageNum} className="flex items-center gap-2">
+                          {showEllipsis && (
+                            <span className="text-gray-900">...</span>
+                          )}
+                          <Button
+                            variant={
+                              pageNum === pagination.currentPage
+                                ? "primary"
+                                : "outline"
+                            }
+                            className={`w-10 h-10 p-0 ${pageNum === pagination.currentPage ? "bg-[#D92D20] text-white hover:bg-[#b91c1c]" : ""}`}
+                            onClick={() => setCurrentPage(pageNum)}
+                          >
+                            {pageNum}
+                          </Button>
+                        </div>
+                      );
+                    })}
+
+                  {/* Next Button */}
+                  <Button
+                    variant="outline"
+                    className="w-10 h-10 p-0"
+                    disabled={!pagination.hasNext}
+                    onClick={() => setCurrentPage((prev) => prev + 1)}
+                  >
+                    &gt;
+                  </Button>
+                </nav>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       <Footer />
     </div>
-  )
+  );
 }
 
 // Main Page Component wrapped in Suspense
 export default function CatalogPage() {
   return (
-    <Suspense fallback={
+    <Suspense
+      fallback={
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+          <Loader2 className="w-8 h-8 animate-spin text-gray-900" />
         </div>
-    }>
+      }
+    >
       <ProductCatalogContent />
     </Suspense>
-  )
+  );
 }

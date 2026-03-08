@@ -51,7 +51,7 @@ model Product {
   name        String
   price       Float
   description String
-  image       String
+  image       String         // Profile/catalog image
   stock       Int      @default(0)
   year        Int
 
@@ -65,10 +65,11 @@ model Product {
   modelId     String
   model       Model    @relation(fields: [modelId], references: [id])
 
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
   
   orderItems  OrderItem[]
+  images      ProductImage[] // Detail images (multiple)
 
   // ── Indexes ─────────────────────────────────────────────
   @@index([categoryId])          // FK lookup for category filter
@@ -77,6 +78,17 @@ model Product {
   @@index([name])                // Search by product name
   @@index([price])               // Sort/filter by price
   @@index([stock])               // Filter low-stock products
+}
+
+model ProductImage {
+  id        String   @id @default(uuid())
+  url       String
+  order     Int      @default(0)  // Display order
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
 }
 
 model Order {

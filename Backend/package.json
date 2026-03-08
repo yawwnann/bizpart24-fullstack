@@ -13,6 +13,8 @@
     "start": "node dist/server.js",
     "seed": "ts-node src/utils/seeder.ts",
     "seed:admin": "ts-node src/utils/create_admin.ts",
+    "seed:products": "ts-node seed/seed-products.ts",
+    "seed:descriptions": "ts-node seed/update-descriptions.ts",
     "upload:images": "ts-node src/utils/uploadProductImages.ts",
     "db:clear": "ts-node src/utils/clearDatabase.ts"
   },
