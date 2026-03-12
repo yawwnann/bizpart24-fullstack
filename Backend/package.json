@@ -11,6 +11,7 @@
     "dev": "nodemon src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
+    "postinstall": "prisma generate",
     "seed": "ts-node src/utils/seeder.ts",
     "seed:admin": "ts-node src/utils/create_admin.ts",
     "seed:products": "ts-node seed/seed-products.ts",
@@ -19,6 +20,7 @@
     "db:clear": "ts-node src/utils/clearDatabase.ts"
   },
   "dependencies": {
+    "@prisma/client": "^5.18.0",
     "axios": "^1.7.9",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.9.0",
@@ -37,7 +39,6 @@
     "winston": "^3.15.0"
   },
   "devDependencies": {
-    "@prisma/client": "^5.18.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",

@@ -1,16 +1,21 @@
-import express, { Application } from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import { errorHandler } from './middlewares/error.middleware';
-import routes from './routes';
+import express, { Application } from "express";
+import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import { errorHandler } from "./middlewares/error.middleware";
+import routes from "./routes";
 
 const app: Application = express();
 
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    credentials: true,
+  }),
+);
 app.use(helmet());
 
 const limiter = rateLimit({
@@ -20,7 +25,7 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // Routes
-app.use('/api', routes);
+app.use("/api", routes);
 
 // Error Handling
 app.use(errorHandler);
