@@ -323,6 +323,7 @@ export function Navbar() {
             {/* Kategori Dropdown Trigger */}
             <div className="group relative h-full flex items-center">
               <button
+                suppressHydrationWarning
                 className={`h-full flex items-center gap-1 px-1 border-b-2 transition-all ${
                   pathname.startsWith("/products")
                     ? "text-[#D92D20] border-[#D92D20] font-bold"

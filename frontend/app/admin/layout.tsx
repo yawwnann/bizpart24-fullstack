@@ -24,21 +24,23 @@ export default function AdminLayout({
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Read localStorage safely during render (lazy initializer runs only on client)
-  const [authorized] = useState<boolean>(() => {
-    if (pathname === "/admin/login") return true;
-    if (typeof window === "undefined") return false;
-    return !!localStorage.getItem("adminToken");
-  });
+  // Start as null (unknown) — same on server & client, no hydration mismatch
+  const [authorized, setAuthorized] = useState<boolean | null>(null);
 
-  // Redirect only — no setState here
   useEffect(() => {
-    if (!authorized && pathname !== "/admin/login") {
+    if (pathname === "/admin/login") {
+      setAuthorized(true);
+      return;
+    }
+    const hasToken = !!localStorage.getItem("adminToken");
+    setAuthorized(hasToken);
+    if (!hasToken) {
       router.push("/admin/login");
     }
-  }, [authorized, pathname, router]);
+  }, [pathname, router]);
 
-  if (!authorized) return null;
+  // null = still checking — both SSR and initial client render return null → no mismatch
+  if (authorized === null) return null;
 
   // If on login page, just render children without sidebar
   if (pathname === "/admin/login") {
