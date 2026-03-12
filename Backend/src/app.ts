@@ -10,24 +10,7 @@ const app: Application = express();
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://bizpart24-fullstack.vercel.app",
-  ...(process.env.FRONTEND_URL
-    ? [process.env.FRONTEND_URL.replace(/\/+$/, "")]
-    : []),
-];
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      const normalized = origin.replace(/\/+$/, "");
-      if (allowedOrigins.includes(normalized)) return callback(null, true);
-      callback(new Error(`CORS: origin ${origin} not allowed`));
-    },
-    credentials: true,
-  }),
-);
+app.use(cors());
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
