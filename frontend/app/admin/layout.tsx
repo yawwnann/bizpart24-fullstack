@@ -26,8 +26,8 @@ export default function AdminLayout({
 
   // Read localStorage safely during render (lazy initializer runs only on client)
   const [authorized] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
     if (pathname === "/admin/login") return true;
+    if (typeof window === "undefined") return false;
     return !!localStorage.getItem("adminToken");
   });
 

@@ -75,6 +75,7 @@ export function MobileMenu() {
             <button
               onClick={() => setShowCategories(!showCategories)}
               className="flex items-center justify-between w-full px-3 py-2 ml-4 rounded-lg text-sm text-gray-500 hover:bg-red-50 hover:text-[#D92D20] transition-colors"
+              suppressHydrationWarning
             >
               <span>Semua Kategori</span>
               <ChevronDown

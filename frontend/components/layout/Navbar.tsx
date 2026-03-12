@@ -163,7 +163,7 @@ export function Navbar() {
               alt="BIZSPAREPART24 Logo"
               width={120}
               height={40}
-              className="h-10 w-auto object-contain"
+              className="object-contain"
             />
           </Link>
         </div>

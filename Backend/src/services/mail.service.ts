@@ -1,17 +1,16 @@
-import { Resend } from 'resend';
-import dotenv from 'dotenv';
+import { Resend } from "resend";
+import dotenv from "dotenv";
 
 dotenv.config();
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM_EMAIL   = process.env.RESEND_FROM_EMAIL  || 'onboarding@resend.dev';
-const ADMIN_EMAIL  = process.env.ADMIN_EMAIL         || 'admin@bizsparepart24.com';
-const BANK_NAME    = process.env.BANK_NAME           || 'BCA';
-const BANK_ACCOUNT = process.env.BANK_ACCOUNT_NUMBER || '1234567890';
-const BANK_HOLDER  = process.env.BANK_ACCOUNT_NAME   || 'PT BIZSPAREPART24';
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@bizsparepart24.com";
+const BANK_NAME = process.env.BANK_NAME || "BCA";
+const BANK_ACCOUNT = process.env.BANK_ACCOUNT_NUMBER || "1234567890";
+const BANK_HOLDER = process.env.BANK_ACCOUNT_NAME || "PT BIZSPAREPART24";
 
 export class MailService {
-
   // 1. Kirim Email ke Customer: Pesanan Dibuat (Menunggu Ongkir)
   static async sendOrderCreatedEmail(order: any) {
     try {
@@ -35,9 +34,9 @@ export class MailService {
               <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
                 <h3 style="margin-top: 0;">Detail Pesanan:</h3>
                 <ul style="padding-left: 20px;">
-                  ${order.items.map((item: any) => `<li>${item.name} x ${item.qty} - Rp ${item.subtotal.toLocaleString('id-ID')}</li>`).join('')}
+                  ${order.items.map((item: any) => `<li>${item.name} x ${item.qty} - Rp ${item.subtotal.toLocaleString("id-ID")}</li>`).join("")}
                 </ul>
-                <p><strong>Subtotal Produk: Rp ${order.itemsTotal.toLocaleString('id-ID')}</strong></p>
+                <p><strong>Subtotal Produk: Rp ${order.itemsTotal.toLocaleString("id-ID")}</strong></p>
                 <p><em>Ongkos Kirim: Menunggu Konfirmasi Admin</em></p>
               </div>
 
@@ -51,12 +50,12 @@ export class MailService {
       });
 
       if (error) {
-        console.error('MailService Error (User Order Created):', error);
+        console.error("MailService Error (User Order Created):", error);
       } else {
-        console.log('MailService Success (User Order Created):', data);
+        console.log("MailService Success (User Order Created):", data);
       }
     } catch (err) {
-      console.error('MailService Exception:', err);
+      console.error("MailService Exception:", err);
     }
   }
 
@@ -66,9 +65,10 @@ export class MailService {
       // In production, use real admin email
       // For standard 'onboarding@resend.dev', you can only send to verified email (usually yourself)
       // So ensure ADMIN_EMAIL is your verified email in Resend dashboard
-      const toEmail = process.env.ADMIN_EMAIL || 'your_verified_email@example.com'; 
+      const toEmail =
+        process.env.ADMIN_EMAIL || "your_verified_email@example.com";
 
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
 
       const { data, error } = await resend.emails.send({
         from: `System Notification <${FROM_EMAIL}>`,
@@ -83,7 +83,7 @@ export class MailService {
             
             <h3>Items:</h3>
             <ul>
-               ${order.items.map((item: any) => `<li>${item.name} x ${item.qty}</li>`).join('')}
+               ${order.items.map((item: any) => `<li>${item.name} x ${item.qty}</li>`).join("")}
             </ul>
 
             <div style="margin-top: 20px;">
@@ -94,19 +94,38 @@ export class MailService {
       });
 
       if (error) {
-        console.error('MailService Error (Admin Notification):', error);
+        console.error("MailService Error (Admin Notification):", error);
       }
     } catch (err) {
-      console.error('MailService Exception:', err);
+      console.error("MailService Exception:", err);
     }
   }
 
   // 3. Kirim Email ke Customer: Ongkir Diupdate (Siap Bayar)
   static async sendShippingUpdatedEmail(order: any) {
     try {
-      if (!order.email) return;
+      if (!order.email) {
+        console.warn(
+          "[sendShippingUpdatedEmail] No email address for order",
+          order.orderId,
+        );
+        return;
+      }
 
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      console.log(
+        "[sendShippingUpdatedEmail] Sending to:",
+        order.email,
+        "for order:",
+        order.orderId,
+      );
+
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+
+      const itemsTotal = Number(order.itemsTotal);
+      const shippingCost = Number(order.shippingCost);
+      const grandTotal = Number(order.grandTotal);
+      const items: Array<{ name: string; qty: number; subtotal: number }> =
+        order.items ?? [];
 
       const { data, error } = await resend.emails.send({
         from: `BIZSPAREPART24 <${FROM_EMAIL}>`,
@@ -124,21 +143,30 @@ export class MailService {
               
               <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
                 <h3 style="margin-top: 0;">Rincian Pembayaran:</h3>
-                <table style="width: 100%;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                  <tr><td colspan="2" style="padding-bottom:8px;"><strong>Detail Pesanan:</strong></td></tr>
+                  ${items
+                    .map(
+                      (item) => `
+                  <tr>
+                    <td style="padding: 3px 0; color:#444;">${item.name} x${item.qty}</td>
+                    <td style="text-align:right; color:#444;">Rp ${Number(item.subtotal).toLocaleString("id-ID")}</td>
+                  </tr>`,
+                    )
+                    .join("")}
+                  <tr><td colspan="2"><hr style="border:0;border-top:1px solid #ddd;margin:10px 0;"></td></tr>
                   <tr>
                     <td>Subtotal Produk:</td>
-                    <td style="text-align: right;">Rp ${order.itemsTotal.toLocaleString('id-ID')}</td>
+                    <td style="text-align: right;">Rp ${itemsTotal.toLocaleString("id-ID")}</td>
                   </tr>
                   <tr>
                     <td>Ongkos Kirim:</td>
-                    <td style="text-align: right;">Rp ${order.shippingCost.toLocaleString('id-ID')}</td>
+                    <td style="text-align: right;">Rp ${shippingCost.toLocaleString("id-ID")}</td>
                   </tr>
-                  <tr>
-                    <td colspan="2"><hr style="border: 0; border-top: 1px solid #ddd; margin: 10px 0;"></td>
-                  </tr>
+                  <tr><td colspan="2"><hr style="border:0;border-top:1px solid #ddd;margin:10px 0;"></td></tr>
                   <tr style="font-weight: bold; font-size: 18px;">
                     <td>Total Bayar:</td>
-                    <td style="text-align: right; color: #D92D20;">Rp ${order.grandTotal.toLocaleString('id-ID')}</td>
+                    <td style="text-align: right; color: #D92D20;">Rp ${grandTotal.toLocaleString("id-ID")}</td>
                   </tr>
                 </table>
               </div>
@@ -163,20 +191,21 @@ export class MailService {
       });
 
       if (error) {
-        console.error('MailService Error (User Shipping Update):', error);
+        console.error("MailService Error (User Shipping Update):", error);
       } else {
-        console.log('MailService Success (User Shipping Update):', data);
+        console.log("MailService Success (User Shipping Update):", data);
       }
     } catch (err) {
-      console.error('MailService Exception:', err);
+      console.error("MailService Exception:", err);
     }
   }
 
   // 4. Kirim Email ke Admin: Notif Bukti Pembayaran Diunggah
   static async sendPaymentProofEmail(order: any) {
     try {
-      const toEmail = process.env.ADMIN_EMAIL || 'your_verified_email@example.com';
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const toEmail =
+        process.env.ADMIN_EMAIL || "your_verified_email@example.com";
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
 
       const { data, error } = await resend.emails.send({
         from: `System Notification <${FROM_EMAIL}>`,
@@ -205,19 +234,21 @@ export class MailService {
                 </tr>
                 <tr>
                   <td style="padding: 8px 12px; color: #666;">Subtotal Produk</td>
-                  <td style="padding: 8px 12px;">Rp ${order.itemsTotal.toLocaleString('id-ID')}</td>
+                  <td style="padding: 8px 12px;">Rp ${order.itemsTotal.toLocaleString("id-ID")}</td>
                 </tr>
                 <tr style="background: #f9f9f9;">
                   <td style="padding: 8px 12px; color: #666;">Ongkos Kirim</td>
-                  <td style="padding: 8px 12px;">Rp ${order.shippingCost.toLocaleString('id-ID')}</td>
+                  <td style="padding: 8px 12px;">Rp ${order.shippingCost.toLocaleString("id-ID")}</td>
                 </tr>
                 <tr style="border-top: 2px solid #eee;">
                   <td style="padding: 10px 12px; font-weight: bold; font-size: 16px;">Total Bayar</td>
-                  <td style="padding: 10px 12px; font-weight: bold; font-size: 16px; color: #D92D20;">Rp ${order.grandTotal.toLocaleString('id-ID')}</td>
+                  <td style="padding: 10px 12px; font-weight: bold; font-size: 16px; color: #D92D20;">Rp ${order.grandTotal.toLocaleString("id-ID")}</td>
                 </tr>
               </table>
 
-              ${order.paymentProof ? `
+              ${
+                order.paymentProof
+                  ? `
               <div style="margin-bottom: 24px;">
                 <p style="font-weight: bold; margin-bottom: 10px;">Bukti Transfer:</p>
                 <a href="${order.paymentProof}" target="_blank">
@@ -225,7 +256,9 @@ export class MailService {
                 </a>
                 <p style="font-size: 12px; color: #999; margin-top: 6px;">Klik gambar untuk melihat ukuran penuh</p>
               </div>
-              ` : ''}
+              `
+                  : ""
+              }
 
               <div style="text-align: center;">
                 <a href="${frontendUrl}/admin/orders/${order.id}" style="display: inline-block; background-color: #111; color: white; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px;">Buka Detail Pesanan</a>
@@ -238,10 +271,12 @@ export class MailService {
         `,
       });
 
-      if (error) console.error('MailService Error (Payment Proof Notification):', error);
-      else console.log('MailService Success (Payment Proof Notification):', data);
+      if (error)
+        console.error("MailService Error (Payment Proof Notification):", error);
+      else
+        console.log("MailService Success (Payment Proof Notification):", data);
     } catch (err) {
-      console.error('MailService Exception (Payment Proof Notification):', err);
+      console.error("MailService Exception (Payment Proof Notification):", err);
     }
   }
 
@@ -254,8 +289,8 @@ export class MailService {
         from: `BIZSPAREPART24 <${FROM_EMAIL}>`,
         to: [order.email],
         subject: order.trackingNumber
-          ? `Pesanan #${order.orderId} Dikirim via ${order.courierType || 'Kurir'} - Resi: ${order.trackingNumber}`
-          : `Pesanan #${order.orderId} Sedang Dikirim via ${order.courierType || 'Antar Sendiri'}`,
+          ? `Pesanan #${order.orderId} Dikirim via ${order.courierType || "Kurir"} - Resi: ${order.trackingNumber}`
+          : `Pesanan #${order.orderId} Sedang Dikirim via ${order.courierType || "Antar Sendiri"}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
             <div style="background-color: #D92D20; padding: 20px; text-align: center;">
@@ -270,22 +305,27 @@ export class MailService {
                 <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
                   <tr>
                     <td style="padding: 6px 0; color: #666;">Ekspedisi</td>
-                    <td style="padding: 6px 0; text-align: right; font-weight: bold; color: #111;">${order.courierType || '-'}</td>
+                    <td style="padding: 6px 0; text-align: right; font-weight: bold; color: #111;">${order.courierType || "-"}</td>
                   </tr>
-                  ${order.trackingNumber ? `
+                  ${
+                    order.trackingNumber
+                      ? `
                   <tr>
                     <td style="padding: 6px 0; color: #666;">Nomor Resi</td>
                     <td style="padding: 6px 0; text-align: right;">
                       <span style="font-size: 18px; font-weight: bold; letter-spacing: 2px; color: #111;">${order.trackingNumber}</span>
                     </td>
                   </tr>
-                  ` : ''}
+                  `
+                      : ""
+                  }
                 </table>
               </div>
 
-              ${order.trackingNumber
-                ? `<p>Gunakan nomor resi di atas untuk melacak paket Anda di website <strong>${order.courierType || 'kurir'}</strong>.</p>`
-                : `<p>Paket Anda akan diantarkan langsung oleh tim kami. Kami akan menghubungi Anda untuk koordinasi pengiriman.</p>`
+              ${
+                order.trackingNumber
+                  ? `<p>Gunakan nomor resi di atas untuk melacak paket Anda di website <strong>${order.courierType || "kurir"}</strong>.</p>`
+                  : `<p>Paket Anda akan diantarkan langsung oleh tim kami. Kami akan menghubungi Anda untuk koordinasi pengiriman.</p>`
               }
 
               <div style="background: #f9f9f9; border-radius: 8px; padding: 16px; margin: 20px 0;">
@@ -293,15 +333,15 @@ export class MailService {
                 <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
                   <tr>
                     <td style="padding: 4px 0; color: #666;">Subtotal Produk</td>
-                    <td style="padding: 4px 0; text-align: right;">Rp ${order.itemsTotal.toLocaleString('id-ID')}</td>
+                    <td style="padding: 4px 0; text-align: right;">Rp ${order.itemsTotal.toLocaleString("id-ID")}</td>
                   </tr>
                   <tr>
                     <td style="padding: 4px 0; color: #666;">Ongkos Kirim</td>
-                    <td style="padding: 4px 0; text-align: right;">Rp ${order.shippingCost.toLocaleString('id-ID')}</td>
+                    <td style="padding: 4px 0; text-align: right;">Rp ${order.shippingCost.toLocaleString("id-ID")}</td>
                   </tr>
                   <tr style="border-top: 1px solid #ddd;">
                     <td style="padding: 8px 0 4px; font-weight: bold;">Total Dibayar</td>
-                    <td style="padding: 8px 0 4px; text-align: right; font-weight: bold; color: #D92D20;">Rp ${order.grandTotal.toLocaleString('id-ID')}</td>
+                    <td style="padding: 8px 0 4px; text-align: right; font-weight: bold; color: #D92D20;">Rp ${order.grandTotal.toLocaleString("id-ID")}</td>
                   </tr>
                 </table>
               </div>
@@ -315,15 +355,18 @@ export class MailService {
         `,
       });
 
-      if (error) console.error('MailService Error (Tracking Number):', error);
-      else console.log('MailService Success (Tracking Number):', data);
+      if (error) console.error("MailService Error (Tracking Number):", error);
+      else console.log("MailService Success (Tracking Number):", data);
     } catch (err) {
-      console.error('MailService Exception (Tracking Number):', err);
+      console.error("MailService Exception (Tracking Number):", err);
     }
   }
 
   // 6. Kirim Email ke Admin: Pelanggan Konfirmasi Barang Diterima
-  static async sendOrderReceivedEmail(order: any, receiptImageUrl: string | null) {
+  static async sendOrderReceivedEmail(
+    order: any,
+    receiptImageUrl: string | null,
+  ) {
     try {
       const { data, error } = await resend.emails.send({
         from: `BIZSPAREPART24 <${FROM_EMAIL}>`,
@@ -360,17 +403,21 @@ export class MailService {
                   </tr>
                   <tr style="border-top: 1px solid #ddd;">
                     <td style="padding: 8px 0 4px; font-weight: bold;">Total Dibayar</td>
-                    <td style="padding: 8px 0 4px; text-align: right; font-weight: bold; color: #059669;">Rp ${order.grandTotal.toLocaleString('id-ID')}</td>
+                    <td style="padding: 8px 0 4px; text-align: right; font-weight: bold; color: #059669;">Rp ${order.grandTotal.toLocaleString("id-ID")}</td>
                   </tr>
                 </table>
               </div>
 
-              ${receiptImageUrl ? `
+              ${
+                receiptImageUrl
+                  ? `
               <div style="margin: 20px 0;">
                 <p style="font-size: 14px; font-weight: bold; margin-bottom: 8px;">📷 Foto Bukti Penerimaan:</p>
                 <img src="${receiptImageUrl}" alt="Bukti Penerimaan" style="max-width: 100%; border-radius: 8px; border: 1px solid #eee;" />
               </div>
-              ` : '<p style="color: #999; font-size: 13px; font-style: italic;">Pelanggan tidak melampirkan foto bukti penerimaan.</p>'}
+              `
+                  : '<p style="color: #999; font-size: 13px; font-style: italic;">Pelanggan tidak melampirkan foto bukti penerimaan.</p>'
+              }
 
             </div>
             <div style="background-color: #f5f5f5; padding: 14px; text-align: center; font-size: 12px; color: #999;">
@@ -380,11 +427,10 @@ export class MailService {
         `,
       });
 
-      if (error) console.error('MailService Error (Order Received):', error);
-      else console.log('MailService Success (Order Received):', data);
+      if (error) console.error("MailService Error (Order Received):", error);
+      else console.log("MailService Success (Order Received):", data);
     } catch (err) {
-      console.error('MailService Exception (Order Received):', err);
+      console.error("MailService Exception (Order Received):", err);
     }
   }
 }
-
