@@ -1,18 +1,78 @@
+"use client";
+
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-import { Select } from "@/components/ui/Select";
 import { ArrowRight, MessageCircle } from "lucide-react";
 import Link from "next/link";
 
 export function Hero() {
+  // const [makes, setMakes] = useState<SelectOption[]>([]);
+  // const [models, setModels] = useState<SelectOption[]>([]);
+  // const [years, setYears] = useState<SelectOption[]>([]);
+
+  // const [selectedYear, setSelectedYear] = useState("");
+  // const [selectedMake, setSelectedMake] = useState("");
+  // const [selectedModel, setSelectedModel] = useState("");
+
+  // useEffect(() => {
+  //   api
+  //     .get("/makes")
+  //     .then((res) => {
+  //       if (res.data.success) {
+  //         setMakes(
+  //           res.data.data.map((m: { name: string }) => ({
+  //             label: m.name,
+  //             value: m.name,
+  //           })),
+  //         );
+  //       }
+  //     })
+  //     .catch(() => {});
+
+  //   api
+  //     .get("/models")
+  //     .then((res) => {
+  //       if (res.data.success) {
+  //         setModels(
+  //           res.data.data.map((m: { name: string }) => ({
+  //             label: m.name,
+  //             value: m.name,
+  //           })),
+  //         );
+  //       }
+  //     })
+  //     .catch(() => {});
+
+  //   api
+  //     .get("/products", { params: { limit: "all" } })
+  //     .then((res) => {
+  //       if (res.data.success) {
+  //         const uniqueYears = [
+  //           ...new Set(res.data.data.map((p: { year: number }) => p.year)),
+  //         ]
+  //           .sort((a, b) => (b as number) - (a as number))
+  //           .map((y) => ({ label: String(y), value: String(y) }));
+  //         setYears(uniqueYears as SelectOption[]);
+  //       }
+  //     })
+  //     .catch(() => {});
+  // }, []);
+
+  // const handleSearch = () => {
+  //   const params = new URLSearchParams();
+  //   if (selectedYear) params.set("year", selectedYear);
+  //   if (selectedMake) params.set("make", selectedMake);
+  //   if (selectedModel) params.set("model", selectedModel);
+
+  //   const query = params.toString();
+  //   router.push(`/products${query ? `?${query}` : ""}`);
+  // };
+
   return (
     <section className="relative w-full bg-[#0a1020] text-white overflow-hidden">
-      {/* Background Image / Overlay */}
       <div className="absolute inset-0 z-0">
-        {/* Placeholder for engine parts background. Using a dark gradient for now to match the "dark blue" vibe */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0a1020] via-[#0a1020]/90 to-transparent z-10" />
+        <div className="absolute inset-0 bg-linear-to-r from-[#0a1020] via-[#0a1020]/90 to-transparent z-10" />
         <div
-          className="w-full h-full opacity-40 bg-[url('https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?q=80&w=2600&auto=format&fit=crop')] bg-cover bg-center"
+          className="w-full h-full opacity-40 bg-[url('https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNDdtNHNoanZtbnJ5eWpqZ3l1NmwyejN4aTFqcHVjbXYyMHBveDBwYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xvUMqz0tf00iFuvwfB/giphy.gif')] bg-cover bg-center"
           aria-hidden="true"
         />
       </div>
@@ -60,7 +120,7 @@ export function Hero() {
           </div>
         </div>
       </div>
-      {/* Search Widget - Floating at bottom */}
+      {/* Search Widget - Floating at bottom
       <div className="container mx-auto px-4 md:px-8 relative z-20 -mt-16 mb-16">
         <Card className="bg-white shadow-lg rounded-2xl border-0">
           <div className="p-6">
@@ -72,11 +132,9 @@ export function Hero() {
                 <Select
                   className="w-full h-11 rounded-lg border text-black border-gray-300 bg-white px-4 text-sm"
                   placeholder="Pilih Tahun Mobil"
-                  options={[
-                    { label: "2024", value: "2024" },
-                    { label: "2023", value: "2023" },
-                    { label: "2022", value: "2022" },
-                  ]}
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  options={years}
                 />
               </div>
 
@@ -87,11 +145,9 @@ export function Hero() {
                 <Select
                   className="w-full h-11 rounded-lg border text-black border-gray-300 bg-white px-4 text-sm"
                   placeholder="Pilih Merek Mobil"
-                  options={[
-                    { label: "Toyota", value: "toyota" },
-                    { label: "Honda", value: "honda" },
-                    { label: "Suzuki", value: "suzuki" },
-                  ]}
+                  value={selectedMake}
+                  onChange={(e) => setSelectedMake(e.target.value)}
+                  options={makes}
                 />
               </div>
 
@@ -102,23 +158,24 @@ export function Hero() {
                 <Select
                   className="w-full h-11 rounded-lg border text-black border-gray-300 bg-white px-4 text-sm"
                   placeholder="Pilih Model Mobil"
-                  options={[
-                    { label: "Avanza", value: "avanza" },
-                    { label: "Jazz", value: "jazz" },
-                    { label: "Civic", value: "civic" },
-                  ]}
+                  value={selectedModel}
+                  onChange={(e) => setSelectedModel(e.target.value)}
+                  options={models}
                 />
               </div>
 
               <div className="flex items-end">
-                <Button className="w-full h-11 bg-black hover:bg-gray-800 text-white font-semibold rounded-lg transition-colors text-sm">
+                <Button
+                  onClick={handleSearch}
+                  className="w-full h-11 bg-black hover:bg-gray-800 text-white font-semibold rounded-lg transition-colors text-sm"
+                >
                   Cari Sparepart
                 </Button>
               </div>
             </div>
           </div>
         </Card>
-      </div>
+      </div> */}
     </section>
   );
 }

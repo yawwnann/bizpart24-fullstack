@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Search,
@@ -155,14 +156,13 @@ export function Navbar() {
       {/* Top Row: Logo, Search, Actions */}
       <div className="container mx-auto px-4 md:px-8 py-4 flex items-center justify-between gap-8">
         <div className="flex items-center gap-4">
-          {/* Mobile Menu Trigger */}
-          <MobileMenu />
-
           {/* Logo */}
           <Link href="/dashboard" className="shrink-0">
-            <img
+            <Image
               src="/logo.png"
               alt="BIZSPAREPART24 Logo"
+              width={120}
+              height={40}
               className="h-10 w-auto object-contain"
             />
           </Link>
@@ -240,6 +240,8 @@ export function Navbar() {
 
         {/* User Actions - Minimalist */}
         <div className="flex items-center gap-6">
+          {/* Mobile Menu Trigger - right side */}
+
           <Link
             href="/products"
             className={
@@ -270,7 +272,7 @@ export function Navbar() {
               Keranjang
             </span>
           </Link>
-
+          <MobileMenu />
           <div className="hidden md:flex items-center gap-6">
             <Link
               href="/payment"
@@ -347,7 +349,7 @@ export function Navbar() {
               <div className="absolute top-full left-0 pt-0 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 {/* invisible bridge to keep hover active */}
                 <div className="h-1 w-full" />
-                <div className="bg-white rounded-xl shadow-2xl border border-gray-100 p-6 min-w-[680px]">
+                <div className="bg-white rounded-xl shadow-2xl border border-gray-100 p-6 min-w-170">
                   {/* Header */}
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
                     <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
@@ -379,7 +381,7 @@ export function Navbar() {
                           }`}
                         >
                           <span
-                            className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${active ? "bg-[#D92D20]" : "bg-gray-300 group-hover/item:bg-[#D92D20]"}`}
+                            className={`w-1.5 h-1.5 rounded-full shrink-0 ${active ? "bg-[#D92D20]" : "bg-gray-300 group-hover/item:bg-[#D92D20]"}`}
                           />
                           <span className="leading-tight">{cat.name}</span>
                         </Link>
