@@ -12,7 +12,9 @@ export const generateWhatsAppLink = (order: OrderForWA) => {
   const bankName = process.env.BANK_NAME || "BCA";
   const bankAccount = process.env.BANK_ACCOUNT_NUMBER || "1234567890";
   const bankHolder = process.env.BANK_ACCOUNT_NAME || "PT BIZSPAREPART24";
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+  const frontendUrl =
+    process.env.FRONTEND_URL ||
+    "http://https://bizpart24-fullstack.vercel.app/";
 
   let formattedPhone = order.phone.replace(/\D/g, "");
   if (formattedPhone.startsWith("0")) {

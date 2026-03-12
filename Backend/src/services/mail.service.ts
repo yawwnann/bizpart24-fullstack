@@ -68,7 +68,9 @@ export class MailService {
       const toEmail =
         process.env.ADMIN_EMAIL || "your_verified_email@example.com";
 
-      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+      const frontendUrl =
+        process.env.FRONTEND_URL ||
+        "http://https://bizpart24-fullstack.vercel.app/";
 
       const { data, error } = await resend.emails.send({
         from: `System Notification <${FROM_EMAIL}>`,
@@ -119,7 +121,9 @@ export class MailService {
         order.orderId,
       );
 
-      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+      const frontendUrl =
+        process.env.FRONTEND_URL ||
+        "http://https://bizpart24-fullstack.vercel.app/";
 
       const itemsTotal = Number(order.itemsTotal);
       const shippingCost = Number(order.shippingCost);
@@ -205,7 +209,9 @@ export class MailService {
     try {
       const toEmail =
         process.env.ADMIN_EMAIL || "your_verified_email@example.com";
-      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+      const frontendUrl =
+        process.env.FRONTEND_URL ||
+        "http://https://bizpart24-fullstack.vercel.app/";
 
       const { data, error } = await resend.emails.send({
         from: `System Notification <${FROM_EMAIL}>`,
