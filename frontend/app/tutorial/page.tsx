@@ -228,7 +228,13 @@ export default function TutorialPage() {
                   variant="ghost"
                   className="w-full mt-3 text-white hover:bg-white/10 hover:text-white h-10"
                 >
-                  <Link href="/contact">Butuh Bantuan?</Link>
+                  <a
+                    href="https://wa.me/6282140130066?text=Halo%2C%20saya%20butuh%20bantuan"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Butuh Bantuan?
+                  </a>
                 </Button>
               </div>
             </Card>
