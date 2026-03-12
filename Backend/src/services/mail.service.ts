@@ -210,7 +210,7 @@ export class MailService {
       const toEmail =
         process.env.ADMIN_EMAIL || "your_verified_email@example.com";
       const frontendUrl =
-        process.env.FRONTEND_URL || "https://bizpart24-fullstack.vercel.app/";
+        process.env.FRONTEND_URL || "https://bizpart24-fullstack.vercel.app";
 
       const { data, error } = await resend.emails.send({
         from: `System Notification <${FROM_EMAIL}>`,
