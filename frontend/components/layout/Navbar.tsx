@@ -12,13 +12,13 @@ import {
   Grid,
 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 
 import { MobileMenu } from "./MobileMenu";
 import { useCart } from "@/context/CartContext";
 import { useFetchCategories } from "@/hooks/useFetchCategories";
 
-export function Navbar() {
+function NavbarInner() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -409,5 +409,13 @@ export function Navbar() {
         </div>
       </div>
     </header>
+  );
+}
+
+export function Navbar() {
+  return (
+    <Suspense fallback={null}>
+      <NavbarInner />
+    </Suspense>
   );
 }

@@ -27,18 +27,18 @@ export const generateWhatsAppLink = (order: OrderForWA) => {
     .join("\n");
 
   const message =
-    `Halo *${order.customerName}*, 😊\n\n` +
+    `Halo *${order.customerName}*, \n\n` +
     `Pesanan Anda *#${order.orderId}* telah dikonfirmasi!\n\n` +
-    `📦 *Detail Pesanan:*\n${itemLines}\n\n` +
-    `💰 *Rincian Tagihan:*\n` +
+    ` *Detail Pesanan:*\n${itemLines}\n\n` +
+    ` *Rincian Tagihan:*\n` +
     `Subtotal Produk : Rp ${order.itemsTotal.toLocaleString("id-ID")}\n` +
     `Ongkos Kirim    : Rp ${order.shippingCost.toLocaleString("id-ID")}\n` +
     `*Total Bayar    : Rp ${order.grandTotal.toLocaleString("id-ID")}*\n\n` +
-    `🏦 *Transfer ke:*\n` +
+    ` *Transfer ke:*\n` +
     `${bankName} — ${bankAccount}\n` +
     `a.n. ${bankHolder}\n\n` +
     `Setelah transfer, harap konfirmasi pembayaran di:\n${frontendUrl}/payment\n\n` +
-    `Terima kasih! 🙏`;
+    `Terima kasih! `;
 
   return `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
 };
