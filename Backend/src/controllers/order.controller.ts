@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import { prisma } from "../utils/prisma";
 import { uploadToCloudinary } from "../utils/cloudinary";
-import { generateWhatsAppLink } from "../utils/whatsapp";
+import {
+  generateWhatsAppLink,
+  generateTrackingWhatsAppLink,
+} from "../utils/whatsapp";
 import { MailService } from "../services/mail.service";
 
 export class OrderController {
@@ -305,7 +308,9 @@ export class OrderController {
       // Notify customer via email
       MailService.sendTrackingNumberEmail(order);
 
-      res.json({ success: true, data: order });
+      const waLink = generateTrackingWhatsAppLink(order);
+
+      res.json({ success: true, data: order, whatsappLink: waLink });
     } catch (error) {
       next(error);
     }
