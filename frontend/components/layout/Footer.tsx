@@ -2,7 +2,6 @@ import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import Link from "next/link";
-import Image from "next/image";
 
 export function Footer() {
   return (
@@ -12,15 +11,8 @@ export function Footer() {
           {/* Brand Column */}
           <div className="space-y-6">
             <div className="flex items-center gap-2">
-              <Image
-                src="/logo.png"
-                alt="Logo"
-                width={32}
-                height={32}
-                className="h-8 w-auto brightness-0 invert"
-              />
               <span className="text-xl font-bold text-white tracking-tighter">
-                BIZSPAREPART<span className="text-[#D92D20]">24</span>
+                BIZPART<span className="text-[#D92D20]">24</span>
               </span>
             </div>
             <p className="text-sm leading-relaxed">
@@ -125,26 +117,6 @@ export function Footer() {
                 </a>
               </li>
             </ul>
-          </div>
-
-          {/* Newsletter Column */}
-          <div>
-            <h3 className="text-white font-bold text-lg mb-6">
-              Berlangganan Newsletter
-            </h3>
-            <p className="text-sm mb-4">
-              Dapatkan penawaran eksklusif dan tips perawatan mobil langsung ke
-              inbox Anda.
-            </p>
-            <div className="space-y-3">
-              <Input
-                placeholder="Alamat Email Anda"
-                className="bg-[#1f1f1f] border-none text-white h-12 rounded-lg focus:ring-1 focus:ring-[#D92D20] placeholder:text-gray-600"
-              />
-              <Button className="w-full h-12 bg-[#D92D20] hover:bg-[#b91c1c] text-white font-bold rounded-lg text-sm tracking-wide">
-                Daftar Sekarang
-              </Button>
-            </div>
           </div>
         </div>
 
