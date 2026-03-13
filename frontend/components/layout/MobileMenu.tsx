@@ -44,7 +44,7 @@ export function MobileMenu() {
 
       {/* Drawer */}
       <div
-        className={`fixed inset-y-0 left-0 w-[80%] max-w-xs bg-white shadow-xl z-70 transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed inset-y-0 right-0 w-[80%] max-w-xs bg-white shadow-xl z-70 transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "translate-x-full"}`}
       >
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
           <div className="font-bold text-lg text-gray-900">Menu</div>

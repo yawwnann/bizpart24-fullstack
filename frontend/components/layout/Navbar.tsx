@@ -32,6 +32,8 @@ function NavbarInner() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [scrolledDown, setScrolledDown] = useState(false);
+  const lastScrollY = useRef(0);
   const searchRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -51,6 +53,20 @@ function NavbarInner() {
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      if (currentY > lastScrollY.current && currentY > 60) {
+        setScrolledDown(true);
+      } else {
+        setScrolledDown(false);
+      }
+      lastScrollY.current = currentY;
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const fetchSuggestions = useCallback(async (q: string) => {
@@ -397,7 +413,9 @@ function NavbarInner() {
       </div>
 
       {/* Mobile Search Bar */}
-      <div className="md:hidden px-4 pb-3">
+      <div
+        className={`md:hidden px-4 overflow-hidden transition-all duration-300 ease-in-out ${scrolledDown ? "max-h-0 pb-0 opacity-0" : "max-h-20 pb-3 opacity-100"}`}
+      >
         <div className="relative w-full">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
             <Search className="w-4 h-4" />

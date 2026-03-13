@@ -1,83 +1,136 @@
-"use client"
+"use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react"
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  ReactNode,
+} from "react";
 
-export interface CartItem {
-  id: number | string
-  name: string
-  price: number
-  image: string
-  quantity: number
-  category: string
+/* =========================
+   Types
+========================= */
+
+export interface Product {
+  id: number | string;
+  name: string;
+  price: number;
+  image: string;
+  category: string;
+}
+
+export interface CartItem extends Product {
+  quantity: number;
 }
 
 interface CartContextType {
-  cartItems: CartItem[]
-  addToCart: (product: any) => void
-  removeFromCart: (id: number | string) => void
-  updateQuantity: (id: number | string, quantity: number) => void
-  clearCart: () => void
-  totalPrice: number
+  cartItems: CartItem[];
+  addToCart: (product: Product) => void;
+  removeFromCart: (id: number | string) => void;
+  updateQuantity: (id: number | string, quantity: number) => void;
+  clearCart: () => void;
+  totalPrice: number;
 }
 
-const CartContext = createContext<CartContextType | undefined>(undefined)
+/* =========================
+   Context
+========================= */
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [cartItems, setCartItems] = useState<CartItem[]>([])
+const CartContext = createContext<CartContextType | null>(null);
 
-  // Load from LocalStorage on mount
-  useEffect(() => {
-    const savedCart = localStorage.getItem("biz24_cart")
-    if (savedCart) {
-      try {
-        setCartItems(JSON.parse(savedCart))
-      } catch (e) {
-        console.error("Failed to parse cart data", e)
-      }
+/* =========================
+   Provider
+========================= */
+
+export function CartProvider({ children }: { children: ReactNode }) {
+  /* =========================
+     Initialize cart from localStorage
+  ========================= */
+
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    if (typeof window === "undefined") return [];
+
+    try {
+      const savedCart = localStorage.getItem("biz24_cart");
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch {
+      return [];
     }
-  }, [])
+  });
 
-  // Save to LocalStorage on change
+  /* =========================
+     Save cart to localStorage
+  ========================= */
+
   useEffect(() => {
-    localStorage.setItem("biz24_cart", JSON.stringify(cartItems))
-  }, [cartItems])
+    localStorage.setItem("biz24_cart", JSON.stringify(cartItems));
+  }, [cartItems]);
 
-  const addToCart = (product: any) => {
+  /* =========================
+     Add item
+  ========================= */
+
+  const addToCart = (product: Product) => {
     setCartItems((prev) => {
-      const existing = prev.find((item) => item.id === product.id)
+      const existing = prev.find((item) => item.id === product.id);
+
       if (existing) {
         return prev.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        )
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item,
+        );
       }
-      return [...prev, { 
-        id: product.id, 
-        name: product.name, 
-        price: product.price, 
-        image: product.image, 
-        category: product.category,
-        quantity: 1 
-      }]
-    })
-    // Optional: Toast notification here
-  }
+
+      return [...prev, { ...product, quantity: 1 }];
+    });
+  };
+
+  /* =========================
+     Remove item
+  ========================= */
 
   const removeFromCart = (id: number | string) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id))
-  }
+    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  /* =========================
+     Update quantity
+  ========================= */
 
   const updateQuantity = (id: number | string, quantity: number) => {
-    if (quantity < 1) return
     setCartItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, quantity } : item))
-    )
-  }
+      prev.map((item) =>
+        item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item,
+      ),
+    );
+  };
+
+  /* =========================
+     Clear cart
+  ========================= */
 
   const clearCart = () => {
-    setCartItems([])
-  }
+    setCartItems([]);
+    localStorage.removeItem("biz24_cart");
+  };
 
-  const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
+  /* =========================
+     Total price
+  ========================= */
+
+  const totalPrice = useMemo(() => {
+    return cartItems.reduce(
+      (total, item) => total + item.price * item.quantity,
+      0,
+    );
+  }, [cartItems]);
+
+  /* =========================
+     Provider
+  ========================= */
 
   return (
     <CartContext.Provider
@@ -92,13 +145,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     >
       {children}
     </CartContext.Provider>
-  )
+  );
 }
 
+/* =========================
+   Hook
+========================= */
+
 export function useCart() {
-  const context = useContext(CartContext)
-  if (context === undefined) {
-    throw new Error("useCart must be used within a CartProvider")
+  const context = useContext(CartContext);
+
+  if (!context) {
+    throw new Error("useCart must be used within a CartProvider");
   }
-  return context
+
+  return context;
 }
