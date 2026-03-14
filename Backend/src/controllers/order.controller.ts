@@ -372,4 +372,160 @@ export class OrderController {
       next(error);
     }
   };
+
+  // Admin Analytics
+  public getAnalytics = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const now = new Date();
+
+      // Last 30 days range
+      const thirtyDaysAgo = new Date(now);
+      thirtyDaysAgo.setDate(now.getDate() - 29);
+      thirtyDaysAgo.setHours(0, 0, 0, 0);
+
+      // This month range
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const startOfLastMonth = new Date(
+        now.getFullYear(),
+        now.getMonth() - 1,
+        1,
+      );
+      const endOfLastMonth = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        0,
+        23,
+        59,
+        59,
+      );
+
+      // --- Fetch all data in parallel ---
+      const [
+        allOrders,
+        ordersThisMonth,
+        ordersLastMonth,
+        topProductsRaw,
+        lowStockProducts,
+      ] = await Promise.all([
+        // All orders from last 30 days
+        prisma.order.findMany({
+          where: { createdAt: { gte: thirtyDaysAgo } },
+          select: {
+            createdAt: true,
+            grandTotal: true,
+            status: true,
+            email: true,
+          },
+          orderBy: { createdAt: "asc" },
+        }),
+        // This month orders
+        prisma.order.count({ where: { createdAt: { gte: startOfMonth } } }),
+        // Last month orders
+        prisma.order.count({
+          where: { createdAt: { gte: startOfLastMonth, lte: endOfLastMonth } },
+        }),
+        // Top selling products by qty (aggregate)
+        prisma.orderItem.groupBy({
+          by: ["productId", "name"],
+          _sum: { qty: true, subtotal: true },
+          orderBy: { _sum: { qty: "desc" } },
+          take: 5,
+        }),
+        // Low stock products
+        prisma.product.findMany({
+          where: { stock: { lte: 5 } },
+          select: { id: true, name: true, stock: true },
+          orderBy: { stock: "asc" },
+          take: 10,
+        }),
+      ]);
+
+      // --- Revenue & Orders per day (last 30 days) ---
+      const dailyMap: Record<string, { revenue: number; orders: number }> = {};
+      for (let i = 0; i < 30; i++) {
+        const d = new Date(thirtyDaysAgo);
+        d.setDate(thirtyDaysAgo.getDate() + i);
+        const key = d.toISOString().slice(0, 10);
+        dailyMap[key] = { revenue: 0, orders: 0 };
+      }
+      for (const order of allOrders) {
+        const key = new Date(order.createdAt).toISOString().slice(0, 10);
+        if (dailyMap[key]) {
+          dailyMap[key].orders += 1;
+          if (order.status === "selesai") {
+            dailyMap[key].revenue += order.grandTotal;
+          }
+        }
+      }
+      const dailyData = Object.entries(dailyMap).map(([date, v]) => ({
+        date,
+        label: new Date(date).toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "short",
+        }),
+        revenue: v.revenue,
+        orders: v.orders,
+      }));
+
+      // --- Orders by status ---
+      const statusCount: Record<string, number> = {};
+      for (const order of allOrders) {
+        statusCount[order.status] = (statusCount[order.status] || 0) + 1;
+      }
+      const ordersByStatus = Object.entries(statusCount).map(
+        ([status, count]) => ({
+          status,
+          count,
+        }),
+      );
+
+      // --- Summary stats ---
+      const totalRevenue30 = allOrders
+        .filter((o) => o.status === "selesai")
+        .reduce((s, o) => s + o.grandTotal, 0);
+      const uniqueCustomers = new Set(allOrders.map((o) => o.email)).size;
+      const completedOrders = allOrders.filter(
+        (o) => o.status === "selesai",
+      ).length;
+      const avgOrderValue =
+        completedOrders > 0 ? totalRevenue30 / completedOrders : 0;
+
+      const orderGrowth =
+        ordersLastMonth > 0
+          ? Math.round(
+              ((ordersThisMonth - ordersLastMonth) / ordersLastMonth) * 100,
+            )
+          : 100;
+
+      res.json({
+        success: true,
+        data: {
+          summary: {
+            revenue30Days: totalRevenue30,
+            orders30Days: allOrders.length,
+            ordersThisMonth,
+            ordersLastMonth,
+            orderGrowth,
+            uniqueCustomers,
+            avgOrderValue,
+            lowStockCount: lowStockProducts.length,
+          },
+          dailyData,
+          ordersByStatus,
+          topProducts: topProductsRaw.map((p) => ({
+            name: p.name,
+            qty: p._sum.qty ?? 0,
+            revenue: p._sum.subtotal ?? 0,
+          })),
+          lowStockProducts,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
