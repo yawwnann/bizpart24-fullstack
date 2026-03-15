@@ -8,7 +8,7 @@ import { Footer } from "@/components/layout/Footer";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Dashboard | BIZSPAREPART24",
+  title: "Dashboard",
   description: "Temukan ribuan suku cadang asli dengan harga terbaik.",
 };
 

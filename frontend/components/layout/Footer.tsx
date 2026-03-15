@@ -117,6 +117,18 @@ export function Footer() {
               </li>
             </ul>
           </div>
+
+          {/* Alamat Column */}
+          <div>
+            <h3 className="text-white font-bold text-lg mb-6">Alamat</h3>
+            <p className="text-sm leading-relaxed">
+              Jalan Raya Pati-Gunungwungkal KM 4
+              <br />
+              Desa Sumberrejo RT 3/6, Kecamatan Gunungwungkal
+              <br />
+              Pati, Jawa Tengah
+            </p>
+          </div>
         </div>
 
         <div className="border-t border-gray-800 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center text-xs gap-4">

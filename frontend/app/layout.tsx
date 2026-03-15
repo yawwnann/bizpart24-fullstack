@@ -17,8 +17,24 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  manifest: "/logo/site.webmanifest",
+  icons: {
+    icon: [
+      { url: "/logo/favicon.ico", sizes: "any" },
+      { url: "/logo/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+      { url: "/logo/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+    ],
+    shortcut: "/logo/favicon.ico",
+    apple: [
+      {
+        url: "/logo/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
+  },
   title: {
-    default: "BIZPART24 - Toko Suku Cadang Mobil Online Terpercaya",
+    default: "BIZPART24 | Toko Suku Cadang Mobil Online Terpercaya",
     template: "%s | BIZPART24",
   },
   description:
@@ -38,9 +54,24 @@ export const metadata: Metadata = {
     locale: "id_ID",
     siteName: "BIZPART24",
     url: SITE_URL,
-    title: "BIZPART24 - Toko Suku Cadang Mobil Online Terpercaya",
+    title: "BIZPART24 | Toko Suku Cadang Mobil Online Terpercaya",
     description:
       "Toko suku cadang mobil online terpercaya di Indonesia. Spare part original, harga terbaik, pengiriman cepat.",
+    images: [
+      {
+        url: "/logo/android-chrome-512x512.png",
+        width: 512,
+        height: 512,
+        alt: "BIZPART24 Logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "BIZPART24 | Toko Suku Cadang Mobil Online Terpercaya",
+    description:
+      "Toko suku cadang mobil online terpercaya di Indonesia. Spare part original, harga terbaik, pengiriman cepat.",
+    images: ["/logo/android-chrome-512x512.png"],
   },
   robots: { index: true, follow: true },
 };

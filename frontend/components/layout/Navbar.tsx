@@ -176,7 +176,7 @@ function NavbarInner() {
           <Link href="/dashboard" className="shrink-0">
             <Image
               src="/logo.png"
-              alt="BIZSPAREPART24 Logo"
+              alt="BIZPART24 Logo"
               width={120}
               height={40}
               className="object-contain"
