@@ -211,284 +211,289 @@ function ProductCatalogContent() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
-
-      {/* Header Section */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4 md:px-8 py-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-              <p className="text-gray-500 text-sm mt-1">
-                {categoryParam
-                  ? `Menampilkan ${pagination.total} produk untuk kategori "${categoryParam}"`
-                  : "Jelajahi semua kategori dan produk berkualitas untuk kendaraan Anda."}
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Mobile Category Filter Button */}
-              <button
-                onClick={() => setShowCategoryModal(true)}
-                className="md:hidden flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 h-10 text-sm font-medium text-gray-700"
-              >
-                <Filter className="w-4 h-4" />
-                {categoryParam ? (
-                  <span className="text-[#D92D20] font-semibold truncate max-w-30">
-                    {categoryParam}
-                  </span>
-                ) : (
-                  "Kategori"
-                )}
-                <ChevronDown className="w-3 h-3 text-gray-400" />
-              </button>
-
-              {/* Sort */}
-              <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 h-10">
-                <span className="text-xs text-gray-900 font-medium whitespace-nowrap">
-                  Urutkan
-                </span>
-                <div className="w-px h-4 bg-gray-200" />
-                <select
-                  value={sortParam}
-                  onChange={(e) => handleSort(e.target.value)}
-                  className="text-sm text-gray-700 border-0 focus:ring-0 cursor-pointer bg-transparent pr-1 font-medium"
-                >
-                  <option value="newest">Terbaru</option>
-                  <option value="oldest">Terlama</option>
-                  <option value="price_asc">Harga Terendah</option>
-                  <option value="price_desc">Harga Tertinggi</option>
-                  <option value="name_asc">Nama (A-Z)</option>
-                  <option value="name_desc">Nama (Z-A)</option>
-                </select>
+      <main id="main-content" className="flex-1 flex flex-col">
+        {/* Header Section */}
+        <div className="bg-white border-b border-gray-200">
+          <div className="container mx-auto px-4 md:px-8 py-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+                <p className="text-gray-500 text-sm mt-1">
+                  {categoryParam
+                    ? `Menampilkan ${pagination.total} produk untuk kategori "${categoryParam}"`
+                    : "Jelajahi semua kategori dan produk berkualitas untuk kendaraan Anda."}
+                </p>
               </div>
-
-              {/* Price Range */}
-              <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 h-10">
-                <span className="text-xs text-gray-900 font-medium whitespace-nowrap">
-                  Harga
-                </span>
-                <div className="w-px h-4 bg-gray-200" />
-                <select
-                  value={selectedPriceRange}
-                  onChange={(e) => handlePriceRange(e.target.value)}
-                  className="text-sm text-gray-700 border-0 focus:ring-0 cursor-pointer bg-transparent pr-1 font-medium"
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Mobile Category Filter Button */}
+                <button
+                  onClick={() => setShowCategoryModal(true)}
+                  className="md:hidden flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 h-10 text-sm font-medium text-gray-700"
                 >
-                  {PRICE_RANGES.map((r) => (
-                    <option
-                      key={`${r.min}-${r.max}`}
-                      value={`${r.min}-${r.max}`}
-                    >
-                      {r.label}
-                    </option>
-                  ))}
-                </select>
+                  <Filter className="w-4 h-4" />
+                  {categoryParam ? (
+                    <span className="text-[#D92D20] font-semibold truncate max-w-30">
+                      {categoryParam}
+                    </span>
+                  ) : (
+                    "Kategori"
+                  )}
+                  <ChevronDown className="w-3 h-3 text-gray-400" />
+                </button>
+
+                {/* Sort */}
+                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 h-10">
+                  <span className="text-xs text-gray-900 font-medium whitespace-nowrap">
+                    Urutkan
+                  </span>
+                  <div className="w-px h-4 bg-gray-200" />
+                  <select
+                    value={sortParam}
+                    onChange={(e) => handleSort(e.target.value)}
+                    className="text-sm text-gray-700 border-0 focus:ring-0 cursor-pointer bg-transparent pr-1 font-medium"
+                  >
+                    <option value="newest">Terbaru</option>
+                    <option value="oldest">Terlama</option>
+                    <option value="price_asc">Harga Terendah</option>
+                    <option value="price_desc">Harga Tertinggi</option>
+                    <option value="name_asc">Nama (A-Z)</option>
+                    <option value="name_desc">Nama (Z-A)</option>
+                  </select>
+                </div>
+
+                {/* Price Range */}
+                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 h-10">
+                  <span className="text-xs text-gray-900 font-medium whitespace-nowrap">
+                    Harga
+                  </span>
+                  <div className="w-px h-4 bg-gray-200" />
+                  <select
+                    value={selectedPriceRange}
+                    onChange={(e) => handlePriceRange(e.target.value)}
+                    className="text-sm text-gray-700 border-0 focus:ring-0 cursor-pointer bg-transparent pr-1 font-medium"
+                  >
+                    {PRICE_RANGES.map((r) => (
+                      <option
+                        key={`${r.min}-${r.max}`}
+                        value={`${r.min}-${r.max}`}
+                      >
+                        {r.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="container mx-auto px-4 md:px-8 py-8 flex-1">
-        <div className="flex flex-col md:flex-row md:items-start gap-8">
-          {/* Sidebar - hidden on mobile */}
-          <aside className="hidden md:block w-full md:w-64 shrink-0 md:sticky md:top-8 md:self-start">
-            <div className="space-y-8">
-              <div>
-                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Filter className="w-4 h-4" /> Filter Kategori
-                </h3>
-                <div className="space-y-1.5">
-                  <Link
-                    href="/products"
-                    className={`block text-sm px-2 py-1 rounded-md transition-all ${
-                      !categoryParam
-                        ? "font-bold text-[#D92D20] bg-red-50"
-                        : "text-gray-600 hover:text-[#D92D20] hover:bg-gray-50"
-                    }`}
-                  >
-                    Semua Kategori
-                  </Link>
-                  {categories.map((cat) => (
+        <div className="container mx-auto px-4 md:px-8 py-8 flex-1">
+          <div className="flex flex-col md:flex-row md:items-start gap-8">
+            {/* Sidebar - hidden on mobile */}
+            <aside className="hidden md:block w-full md:w-64 shrink-0 md:sticky md:top-8 md:self-start">
+              <div className="space-y-8">
+                <div>
+                  <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <Filter className="w-4 h-4" /> Filter Kategori
+                  </h3>
+                  <div className="space-y-1.5">
                     <Link
-                      key={cat.id}
-                      href={`/products?category=${cat.name.toLowerCase()}`}
+                      href="/products"
                       className={`block text-sm px-2 py-1 rounded-md transition-all ${
-                        categoryParam &&
-                        cat.name.toLowerCase() === categoryParam.toLowerCase()
+                        !categoryParam
                           ? "font-bold text-[#D92D20] bg-red-50"
                           : "text-gray-600 hover:text-[#D92D20] hover:bg-gray-50"
                       }`}
                     >
-                      {cat.name}
+                      Semua Kategori
                     </Link>
-                  ))}
+                    {categories.map((cat) => (
+                      <Link
+                        key={cat.id}
+                        href={`/products?category=${cat.name.toLowerCase()}`}
+                        className={`block text-sm px-2 py-1 rounded-md transition-all ${
+                          categoryParam &&
+                          cat.name.toLowerCase() === categoryParam.toLowerCase()
+                            ? "font-bold text-[#D92D20] bg-red-50"
+                            : "text-gray-600 hover:text-[#D92D20] hover:bg-gray-50"
+                        }`}
+                      >
+                        {cat.name}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          </aside>
+            </aside>
 
-          {/* Mobile Category Modal */}
-          {showCategoryModal && (
-            <>
-              <div
-                className="fixed inset-0 bg-black/50 z-40 md:hidden"
-                onClick={() => setShowCategoryModal(false)}
-              />
-              <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-2xl md:hidden max-h-[75vh] flex flex-col">
-                <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                  <h3 className="font-bold text-gray-900">Filter Kategori</h3>
-                  <button onClick={() => setShowCategoryModal(false)}>
-                    <X className="w-5 h-5 text-gray-500" />
-                  </button>
-                </div>
-                <div className="overflow-y-auto p-4 space-y-1">
-                  <Link
-                    href="/products"
-                    onClick={() => setShowCategoryModal(false)}
-                    className={`block text-sm px-3 py-2.5 rounded-lg transition-all ${
-                      !categoryParam
-                        ? "font-bold text-[#D92D20] bg-red-50"
-                        : "text-gray-700 hover:text-[#D92D20] hover:bg-gray-50"
-                    }`}
-                  >
-                    Semua Kategori
-                  </Link>
-                  {categories.map((cat) => (
+            {/* Mobile Category Modal */}
+            {showCategoryModal && (
+              <>
+                <div
+                  className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                  onClick={() => setShowCategoryModal(false)}
+                />
+                <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-2xl md:hidden max-h-[75vh] flex flex-col">
+                  <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                    <h3 className="font-bold text-gray-900">Filter Kategori</h3>
+                    <button onClick={() => setShowCategoryModal(false)}>
+                      <X className="w-5 h-5 text-gray-500" />
+                    </button>
+                  </div>
+                  <div className="overflow-y-auto p-4 space-y-1">
                     <Link
-                      key={cat.id}
-                      href={`/products?category=${cat.name.toLowerCase()}`}
+                      href="/products"
                       onClick={() => setShowCategoryModal(false)}
                       className={`block text-sm px-3 py-2.5 rounded-lg transition-all ${
-                        categoryParam &&
-                        cat.name.toLowerCase() === categoryParam.toLowerCase()
+                        !categoryParam
                           ? "font-bold text-[#D92D20] bg-red-50"
                           : "text-gray-700 hover:text-[#D92D20] hover:bg-gray-50"
                       }`}
                     >
-                      {cat.name}
+                      Semua Kategori
                     </Link>
+                    {categories.map((cat) => (
+                      <Link
+                        key={cat.id}
+                        href={`/products?category=${cat.name.toLowerCase()}`}
+                        onClick={() => setShowCategoryModal(false)}
+                        className={`block text-sm px-3 py-2.5 rounded-lg transition-all ${
+                          categoryParam &&
+                          cat.name.toLowerCase() === categoryParam.toLowerCase()
+                            ? "font-bold text-[#D92D20] bg-red-50"
+                            : "text-gray-700 hover:text-[#D92D20] hover:bg-gray-50"
+                        }`}
+                      >
+                        {cat.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Product Grid */}
+            <div className="flex-1">
+              {loading ? (
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                  {Array.from({ length: 12 }).map((_, i) => (
+                    <ProductCardSkeleton key={i} />
                   ))}
                 </div>
-              </div>
-            </>
-          )}
-
-          {/* Product Grid */}
-          <div className="flex-1">
-            {loading ? (
-              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <ProductCardSkeleton key={i} />
-                ))}
-              </div>
-            ) : error ? (
-              <div className="text-center py-20 text-red-500">
-                <p>{error}</p>
-                <Button
-                  variant="outline"
-                  className="mt-4"
-                  onClick={() => window.location.reload()}
-                >
-                  Coba Lagi
-                </Button>
-              </div>
-            ) : products.length > 0 ? (
-              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                {products.map((product) => (
-                  <div key={product.id} className="h-full">
-                    <Link
-                      href={`/products/${product.id}`}
-                      className="block h-full"
-                    >
-                      <ProductCard product={product} />
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
-                <p className="text-gray-500">
-                  Tidak ada produk ditemukan untuk kategori ini.
-                </p>
-                <Button variant="outline" className="mt-4" asChild>
-                  <Link href="/products">Lihat Semua Produk</Link>
-                </Button>
-              </div>
-            )}
-
-            {/* Pagination */}
-            {!loading && !error && pagination.totalPages > 1 && (
-              <div className="mt-12 flex flex-col items-center gap-4">
-                <div className="text-sm text-gray-500">
-                  Halaman {pagination.currentPage} dari {pagination.totalPages}
-                  <span className="mx-2">•</span>
-                  Total {pagination.total} produk
+              ) : error ? (
+                <div className="text-center py-20 text-red-500">
+                  <p>{error}</p>
+                  <Button
+                    variant="outline"
+                    className="mt-4"
+                    onClick={() => window.location.reload()}
+                  >
+                    Coba Lagi
+                  </Button>
                 </div>
-                <nav className="flex items-center gap-2">
-                  {/* Previous Button */}
-                  <Button
-                    variant="outline"
-                    className="w-10 h-10 p-0"
-                    disabled={!pagination.hasPrev}
-                    onClick={() => setCurrentPage((prev) => prev - 1)}
-                  >
-                    &lt;
+              ) : products.length > 0 ? (
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                  {products.map((product) => (
+                    <div key={product.id} className="h-full">
+                      <Link
+                        href={`/products/${product.id}`}
+                        className="block h-full"
+                      >
+                        <ProductCard product={product} />
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
+                  <p className="text-gray-500">
+                    Tidak ada produk ditemukan untuk kategori ini.
+                  </p>
+                  <Button variant="outline" className="mt-4" asChild>
+                    <Link href="/products">Lihat Semua Produk</Link>
                   </Button>
+                </div>
+              )}
 
-                  {/* Page Numbers */}
-                  {Array.from(
-                    { length: pagination.totalPages },
-                    (_, i) => i + 1,
-                  )
-                    .filter((pageNum) => {
-                      // Show first page, last page, current page, and pages around current
-                      return (
-                        pageNum === 1 ||
-                        pageNum === pagination.totalPages ||
-                        Math.abs(pageNum - pagination.currentPage) <= 1
-                      );
-                    })
-                    .map((pageNum, idx, arr) => {
-                      // Add ellipsis if there's a gap
-                      const prevPageNum = arr[idx - 1];
-                      const showEllipsis =
-                        prevPageNum && pageNum - prevPageNum > 1;
+              {/* Pagination */}
+              {!loading && !error && pagination.totalPages > 1 && (
+                <div className="mt-12 flex flex-col items-center gap-4">
+                  <div className="text-sm text-gray-500">
+                    Halaman {pagination.currentPage} dari{" "}
+                    {pagination.totalPages}
+                    <span className="mx-2">•</span>
+                    Total {pagination.total} produk
+                  </div>
+                  <nav className="flex items-center gap-2">
+                    {/* Previous Button */}
+                    <Button
+                      variant="outline"
+                      className="w-10 h-10 p-0"
+                      disabled={!pagination.hasPrev}
+                      onClick={() => setCurrentPage((prev) => prev - 1)}
+                    >
+                      &lt;
+                    </Button>
 
-                      return (
-                        <div key={pageNum} className="flex items-center gap-2">
-                          {showEllipsis && (
-                            <span className="text-gray-900">...</span>
-                          )}
-                          <Button
-                            variant={
-                              pageNum === pagination.currentPage
-                                ? "primary"
-                                : "outline"
-                            }
-                            className={`w-10 h-10 p-0 ${pageNum === pagination.currentPage ? "bg-[#D92D20] text-white hover:bg-[#b91c1c]" : ""}`}
-                            onClick={() => setCurrentPage(pageNum)}
+                    {/* Page Numbers */}
+                    {Array.from(
+                      { length: pagination.totalPages },
+                      (_, i) => i + 1,
+                    )
+                      .filter((pageNum) => {
+                        // Show first page, last page, current page, and pages around current
+                        return (
+                          pageNum === 1 ||
+                          pageNum === pagination.totalPages ||
+                          Math.abs(pageNum - pagination.currentPage) <= 1
+                        );
+                      })
+                      .map((pageNum, idx, arr) => {
+                        // Add ellipsis if there's a gap
+                        const prevPageNum = arr[idx - 1];
+                        const showEllipsis =
+                          prevPageNum && pageNum - prevPageNum > 1;
+
+                        return (
+                          <div
+                            key={pageNum}
+                            className="flex items-center gap-2"
                           >
-                            {pageNum}
-                          </Button>
-                        </div>
-                      );
-                    })}
+                            {showEllipsis && (
+                              <span className="text-gray-900">...</span>
+                            )}
+                            <Button
+                              variant={
+                                pageNum === pagination.currentPage
+                                  ? "primary"
+                                  : "outline"
+                              }
+                              className={`w-10 h-10 p-0 ${pageNum === pagination.currentPage ? "bg-[#D92D20] text-white hover:bg-[#b91c1c]" : ""}`}
+                              onClick={() => setCurrentPage(pageNum)}
+                            >
+                              {pageNum}
+                            </Button>
+                          </div>
+                        );
+                      })}
 
-                  {/* Next Button */}
-                  <Button
-                    variant="outline"
-                    className="w-10 h-10 p-0"
-                    disabled={!pagination.hasNext}
-                    onClick={() => setCurrentPage((prev) => prev + 1)}
-                  >
-                    &gt;
-                  </Button>
-                </nav>
-              </div>
-            )}
+                    {/* Next Button */}
+                    <Button
+                      variant="outline"
+                      className="w-10 h-10 p-0"
+                      disabled={!pagination.hasNext}
+                      onClick={() => setCurrentPage((prev) => prev + 1)}
+                    >
+                      &gt;
+                    </Button>
+                  </nav>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-      <Footer />
+        <Footer />
+      </main>
     </div>
   );
 }

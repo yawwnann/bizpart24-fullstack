@@ -90,8 +90,9 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 flex flex-col">
         <Navbar />
+        <main id="main-content" className="flex-1">
         {/* Skeleton Breadcrumb */}
         <div className="container mx-auto px-4 md:px-8 py-3">
           <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mb-2" />
@@ -144,15 +145,17 @@ export default function ProductDetailPage() {
             <div className="h-3 w-4/6 bg-gray-200 rounded animate-pulse" />
           </div>
         </div>
+        </main>
         <Footer />
-      </main>
+      </div>
     );
   }
 
   if (notFound || !product) {
     return (
-      <main className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 flex flex-col">
         <Navbar />
+        <main id="main-content" className="flex-1">
         <div className="flex flex-col items-center justify-center h-96 gap-4 text-center px-4">
           <Package className="w-16 h-16 text-gray-200" />
           <p className="text-xl font-bold text-gray-700">
@@ -168,8 +171,9 @@ export default function ProductDetailPage() {
             <Link href="/products">Kembali ke Katalog</Link>
           </Button>
         </div>
+        </main>
         <Footer />
-      </main>
+      </div>
     );
   }
 
@@ -178,11 +182,11 @@ export default function ProductDetailPage() {
     : [];
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
-
+      <main id="main-content" className="flex-1">
       {/* Back + Breadcrumb */}
-      <div className="container mx-auto px-4 md:px-8 py-3">
+      <nav aria-label="Breadcrumb" className="container mx-auto px-4 md:px-8 py-3">
         <button
           onClick={() => router.back()}
           className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#D92D20] transition-colors font-medium mb-2"
@@ -190,37 +194,37 @@ export default function ProductDetailPage() {
           <ArrowLeft className="w-4 h-4" />
           Kembali
         </button>
-        <div className="text-xs text-gray-400 flex items-center gap-1 flex-wrap">
-          <Link
-            href="/dashboard"
-            className="hover:text-[#D92D20] transition-colors"
-          >
-            Beranda
-          </Link>
-          <ChevronRight className="w-3 h-3" />
-          <Link
-            href="/products"
-            className="hover:text-[#D92D20] transition-colors"
-          >
-            Katalog
-          </Link>
-          <ChevronRight className="w-3 h-3" />
-          <Link
-            href={`/products?category=${product.category.toLowerCase()}`}
-            className="hover:text-[#D92D20] transition-colors"
-          >
-            {product.category}
-          </Link>
-          <ChevronRight className="w-3 h-3" />
-          <span className="text-gray-600 font-medium truncate max-w-[200px]">
-            {product.name}
-          </span>
-        </div>
-      </div>
+        <ol className="text-xs text-gray-400 flex items-center gap-1 flex-wrap list-none p-0 m-0">
+          <li>
+            <Link href="/dashboard" className="hover:text-[#D92D20] transition-colors">
+              Beranda
+            </Link>
+          </li>
+          <li aria-hidden="true"><ChevronRight className="w-3 h-3" /></li>
+          <li>
+            <Link href="/products" className="hover:text-[#D92D20] transition-colors">
+              Katalog
+            </Link>
+          </li>
+          <li aria-hidden="true"><ChevronRight className="w-3 h-3" /></li>
+          <li>
+            <Link
+              href={`/products?category=${product.category.toLowerCase()}`}
+              className="hover:text-[#D92D20] transition-colors"
+            >
+              {product.category}
+            </Link>
+          </li>
+          <li aria-hidden="true"><ChevronRight className="w-3 h-3" /></li>
+          <li aria-current="page">
+            <span className="text-gray-600 font-medium truncate max-w-50 inline-block">{product.name}</span>
+          </li>
+        </ol>
+      </nav>
 
       {/* Main Content */}
       <div className="container mx-auto px-4 md:px-8 pb-10 space-y-4">
-        <div className="bg-white rounded-2xl p-5 md:p-8 shadow-sm border border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+        <article className="bg-white rounded-2xl p-5 md:p-8 shadow-sm border border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           <div className="space-y-3">
             {/* Main Image */}
             <div className="aspect-square bg-gray-50 rounded-xl overflow-hidden flex items-center justify-center border border-gray-100 group">
@@ -397,9 +401,9 @@ export default function ProductDetailPage() {
               </div>
             </div>
           </div>
-        </div>
+        </article>
 
-        {/* Description Section */}
+        {/* Description Section */}}
         {descParagraphs.length > 0 && (
           <div className="bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-gray-100">
             <h2 className="text-base font-bold text-gray-900 mb-4 pb-3 border-b border-gray-100">
@@ -413,8 +417,8 @@ export default function ProductDetailPage() {
           </div>
         )}
       </div>
-
+      </main>
       <Footer />
-    </main>
+    </div>
   );
 }
