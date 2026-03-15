@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 
+const SITE_URL = "https://www.bizpart24.com";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -14,6 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "BIZPART24 - Toko Suku Cadang Mobil Online Terpercaya",
     template: "%s | BIZPART24",
@@ -34,6 +37,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "id_ID",
     siteName: "BIZPART24",
+    url: SITE_URL,
     title: "BIZPART24 - Toko Suku Cadang Mobil Online Terpercaya",
     description:
       "Toko suku cadang mobil online terpercaya di Indonesia. Spare part original, harga terbaik, pengiriman cepat.",

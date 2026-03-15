@@ -397,9 +397,9 @@ export default function AdminDashboardPage() {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: number, name: string) => [
-                      value,
-                      STATUS_MAP[name]?.label ?? name,
+                    formatter={(value, name) => [
+                      String(value ?? 0),
+                      STATUS_MAP[String(name)]?.label ?? String(name),
                     ]}
                   />
                 </PieChart>

@@ -113,12 +113,6 @@ export default function AdminProductsPage() {
     [loadingMore, hasMore],
   );
 
-  const buildStockParams = () => {
-    if (stockFilter === "out") return { maxStock: 0 };
-    if (stockFilter === "low") return { minStock: 1, maxStock: 5 };
-    return {};
-  };
-
   const fetchProducts = async (pageNum: number) => {
     try {
       if (pageNum === 1) setLoading(true);
@@ -128,10 +122,14 @@ export default function AdminProductsPage() {
         page: pageNum,
         limit: PAGE_SIZE,
         sort,
-        ...(search ? { search } : {}),
-        ...(categoryFilter ? { category: categoryFilter } : {}),
-        ...buildStockParams(),
       };
+      if (search) params.search = search;
+      if (categoryFilter) params.category = categoryFilter;
+      if (stockFilter === "out") params.maxStock = 0;
+      if (stockFilter === "low") {
+        params.minStock = 1;
+        params.maxStock = 5;
+      }
 
       const res = await api.get<{
         success: boolean;
