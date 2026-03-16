@@ -13,6 +13,39 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      // Redirect non-www to www
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "bizpart24.com",
+          },
+        ],
+        destination: "https://www.bizpart24.com/:path*",
+        permanent: true,
+      },
+      // Redirect http://www to https://www
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "www.bizpart24.com",
+          },
+          {
+            type: "header",
+            key: "x-forwarded-proto",
+            value: "http",
+          },
+        ],
+        destination: "https://www.bizpart24.com/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

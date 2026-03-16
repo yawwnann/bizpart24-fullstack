@@ -143,13 +143,18 @@ function NavbarInner() {
   };
 
   const isActive = (path: string, category?: string) => {
+    if (path === "/") {
+      // Homepage exact match
+      return pathname === "/" && !searchParams.get("category");
+    }
+
     if (pathname !== path) return false;
 
     const currentCategory = searchParams.get("category");
     if (category) {
       return currentCategory === category;
     }
-    // If no category specified in isActive check, ensure no category in URL (for generic pages like Dashboard or main Catalog)
+    // If no category specified in isActive check, ensure no category in URL (for generic pages like main Catalog)
     return !currentCategory;
   };
 
@@ -173,7 +178,7 @@ function NavbarInner() {
       <div className="container mx-auto px-4 md:px-8 py-4 flex items-center justify-between gap-8">
         <div className="flex items-center gap-4">
           {/* Logo */}
-          <Link href="/dashboard" className="shrink-0">
+          <Link href="/" className="shrink-0">
             <Image
               src="/logo.png"
               alt="BIZPART24 Logo"
@@ -330,10 +335,7 @@ function NavbarInner() {
       <div className="w-full bg-white border-t border-gray-100 hidden md:block">
         <div className="container mx-auto px-4 md:px-8">
           <nav className="flex items-center gap-8 h-12 text-sm font-medium">
-            <Link
-              href="/dashboard"
-              className={linkClass(isActive("/dashboard"))}
-            >
+            <Link href="/" className={linkClass(isActive("/"))}>
               BERANDA
             </Link>
 

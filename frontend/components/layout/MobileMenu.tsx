@@ -57,7 +57,7 @@ export function MobileMenu() {
           {/* Main Navigation */}
           <nav className="space-y-1">
             <Link
-              href="/dashboard"
+              href="/"
               onClick={closeMenu}
               className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-700 hover:bg-red-50 hover:text-[#D92D20] transition-colors font-medium"
             >

@@ -20,11 +20,12 @@ export const metadata: Metadata = {
   manifest: "/logo/site.webmanifest",
   icons: {
     icon: [
+      { url: "/favicon.ico", sizes: "any" },
       { url: "/logo/favicon.ico", sizes: "any" },
       { url: "/logo/favicon-32x32.png", type: "image/png", sizes: "32x32" },
       { url: "/logo/favicon-16x16.png", type: "image/png", sizes: "16x16" },
     ],
-    shortcut: "/logo/favicon.ico",
+    shortcut: ["/favicon.ico", "/logo/favicon.ico"],
     apple: [
       {
         url: "/logo/apple-touch-icon.png",
@@ -33,12 +34,16 @@ export const metadata: Metadata = {
       },
     ],
   },
+  alternates: {
+    canonical: SITE_URL,
+  },
   title: {
-    default: "BIZPART24 | Toko Suku Cadang Mobil Online Terpercaya",
+    default:
+      "BIZPART24 - Toko Suku Cadang Mobil Online Terpercaya di Indonesia",
     template: "%s | BIZPART24",
   },
   description:
-    "Toko suku cadang mobil online terpercaya di Indonesia. Temukan ribuan spare part original dengan harga terbaik, pengiriman cepat ke seluruh Indonesia.",
+    "Toko suku cadang mobil online terpercaya di Indonesia. Temukan ribuan spare part original dengan harga terbaik dan pengiriman cepat.",
   keywords: [
     "suku cadang mobil",
     "spare part mobil",
@@ -48,15 +53,17 @@ export const metadata: Metadata = {
     "busi mobil",
     "suku cadang original",
     "toko otomotif online",
+    "bizpart24",
+    "suku cadang online",
   ],
   openGraph: {
     type: "website",
     locale: "id_ID",
     siteName: "BIZPART24",
     url: SITE_URL,
-    title: "BIZPART24 | Toko Suku Cadang Mobil Online Terpercaya",
+    title: "BIZPART24 - Toko Suku Cadang Mobil Online Terpercaya di Indonesia",
     description:
-      "Toko suku cadang mobil online terpercaya di Indonesia. Spare part original, harga terbaik, pengiriman cepat.",
+      "Toko suku cadang mobil online terpercaya di Indonesia. Temukan ribuan spare part original dengan harga terbaik dan pengiriman cepat.",
     images: [
       {
         url: "/logo/android-chrome-512x512.png",
@@ -68,9 +75,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "BIZPART24 | Toko Suku Cadang Mobil Online Terpercaya",
+    title: "BIZPART24 - Toko Suku Cadang Mobil Online Terpercaya di Indonesia",
     description:
-      "Toko suku cadang mobil online terpercaya di Indonesia. Spare part original, harga terbaik, pengiriman cepat.",
+      "Toko suku cadang mobil online terpercaya di Indonesia. Temukan ribuan spare part original dengan harga terbaik dan pengiriman cepat.",
     images: ["/logo/android-chrome-512x512.png"],
   },
   robots: { index: true, follow: true },
