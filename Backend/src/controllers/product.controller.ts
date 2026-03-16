@@ -21,7 +21,7 @@ export class ProductController {
 
       // Pagination setup
       const fetchAll = limitParam === "all";
-      const limit = fetchAll ? undefined : parseInt(limitParam as string) || 12;
+      const limit = fetchAll ? undefined : parseInt(limitParam as string) || 30;
       const currentPage = parseInt(page as string) || 1;
       const skip = fetchAll ? undefined : (currentPage - 1) * (limit as number);
 

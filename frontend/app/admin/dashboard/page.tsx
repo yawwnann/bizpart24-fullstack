@@ -126,12 +126,12 @@ export default function AdminDashboardPage() {
         const token = localStorage.getItem("adminToken");
         const config = { headers: { Authorization: `Bearer ${token}` } };
         const [productsRes, ordersRes, analyticsRes] = await Promise.all([
-          api.get("/products"),
+          api.get("/products?limit=1"), // Hanya ambil 1 produk untuk mendapatkan total count
           api.get("/orders/admin/list", config),
           api.get("/orders/admin/analytics", config),
         ]);
         const products = productsRes.data.success
-          ? productsRes.data.count || productsRes.data.data.length
+          ? productsRes.data.pagination?.total || 0
           : 0;
         const orders = ordersRes.data.success ? ordersRes.data.data : [];
         setStats({ products, recentOrders: orders.slice(0, 5) });

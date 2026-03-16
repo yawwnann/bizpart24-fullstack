@@ -50,6 +50,8 @@ export default function AdminProductFormPage() {
     { id: string; url: string; order: number }[]
   >([]);
   const [deleteImageIds, setDeleteImageIds] = useState<string[]>([]);
+  const [imageError, setImageError] = useState("");
+  const [detailImageError, setDetailImageError] = useState("");
 
   useEffect(() => {
     // Fetch categories
@@ -110,6 +112,15 @@ export default function AdminProductFormPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+
+      // Check file size (1MB = 1024 * 1024 bytes)
+      const maxSize = 1024 * 1024; // 1MB
+      if (file.size > maxSize) {
+        setImageError("Ukuran file terlalu besar. Maksimal 1MB.");
+        return;
+      }
+
+      setImageError("");
       setImageFile(file);
       setPreviewImage(URL.createObjectURL(file));
     }
@@ -118,6 +129,18 @@ export default function AdminProductFormPage() {
   const handleDetailImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
+      const maxSize = 1024 * 1024; // 1MB
+
+      // Check if any file exceeds size limit
+      const oversizedFiles = files.filter((file) => file.size > maxSize);
+      if (oversizedFiles.length > 0) {
+        setDetailImageError(
+          `${oversizedFiles.length} file(s) terlalu besar. Maksimal 1MB per file.`,
+        );
+        return;
+      }
+
+      setDetailImageError("");
       setDetailFiles((prev) => [...prev, ...files]);
       setDetailPreviews((prev) => [
         ...prev,
@@ -129,6 +152,10 @@ export default function AdminProductFormPage() {
   const removeNewDetailImage = (index: number) => {
     setDetailFiles((prev) => prev.filter((_, i) => i !== index));
     setDetailPreviews((prev) => prev.filter((_, i) => i !== index));
+    // Clear error if no files left
+    if (detailFiles.length === 1) {
+      setDetailImageError("");
+    }
   };
 
   const removeExistingDetailImage = (imageId: string) => {
@@ -260,9 +287,13 @@ export default function AdminProductFormPage() {
       }
 
       router.push("/admin/products");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save product", error);
-      alert("Gagal menyimpan produk");
+
+      // Show specific error message from backend
+      const errorMessage =
+        error.response?.data?.message || "Gagal menyimpan produk";
+      alert(errorMessage);
     } finally {
       setSubmitting(false);
     }
@@ -613,6 +644,11 @@ export default function AdminProductFormPage() {
             <h3 className="font-bold text-gray-900 border-b border-gray-100 pb-2">
               Gambar Profil Katalog
             </h3>
+            {imageError && (
+              <div className="text-red-500 text-xs bg-red-50 border border-red-200 rounded-md p-2">
+                {imageError}
+              </div>
+            )}
             <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:bg-gray-50 hover:border-[#D92D20] transition-all cursor-pointer relative group">
               {previewImage ? (
                 <div className="relative aspect-square w-full">
@@ -624,12 +660,26 @@ export default function AdminProductFormPage() {
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-medium">
                     Ubah Gambar
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageFile(null);
+                      setPreviewImage("");
+                      setImageError("");
+                    }}
+                    className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
                 </div>
               ) : (
                 <div className="aspect-square w-full flex flex-col items-center justify-center text-gray-400 group-hover:text-[#D92D20] transition-colors">
                   <Upload className="w-8 h-8 mb-2" />
                   <span className="text-xs font-medium">
                     Klik untuk Upload Gambar Profil
+                  </span>
+                  <span className="text-[10px] text-gray-300 mt-1">
+                    Maksimal 1MB
                   </span>
                 </div>
               )}
@@ -647,8 +697,13 @@ export default function AdminProductFormPage() {
               Gambar Detail Produk
             </h3>
             <p className="text-xs text-gray-400">
-              Gambar tambahan untuk halaman detail (maks 10)
+              Gambar tambahan untuk halaman detail (maks 10, 1MB per file)
             </p>
+            {detailImageError && (
+              <div className="text-red-500 text-xs bg-red-50 border border-red-200 rounded-md p-2">
+                {detailImageError}
+              </div>
+            )}
 
             {/* Existing detail images */}
             {existingDetailImages.length > 0 && (
@@ -709,6 +764,9 @@ export default function AdminProductFormPage() {
                 <ImagePlus className="w-6 h-6 mb-1" />
                 <span className="text-xs font-medium">
                   Tambah Gambar Detail
+                </span>
+                <span className="text-[10px] text-gray-300 mt-1">
+                  Maksimal 1MB per file
                 </span>
               </div>
               <input
