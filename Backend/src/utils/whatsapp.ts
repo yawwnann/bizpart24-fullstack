@@ -19,7 +19,7 @@ interface OrderForTracking {
 export const generateWhatsAppLink = (order: OrderForWA) => {
   const bankName = process.env.BANK_NAME || "BCA";
   const bankAccount = process.env.BANK_ACCOUNT_NUMBER || "1234567890";
-  const bankHolder = process.env.BANK_ACCOUNT_NAME || "PT BIZSPAREPART24";
+  const bankHolder = process.env.BANK_ACCOUNT_NAME || "PT BIZPART24";
   const frontendUrl =
     process.env.FRONTEND_URL || "https://bizpart24-fullstack.vercel.app";
 
@@ -69,7 +69,7 @@ export const generateTrackingWhatsAppLink = (order: OrderForTracking) => {
     ` *Info Pengiriman:*\n` +
     `Ekspedisi : ${courier}\n` +
     `${resi}\n\n` +
-    `Terima kasih telah berbelanja di BIZSPAREPART24! \n` +
+    `Terima kasih telah berbelanja di BIZPART24! \n` +
     `Jika ada pertanyaan, balas pesan ini.`;
 
   return `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;

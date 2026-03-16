@@ -1,42 +1,42 @@
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
-import slugify from 'slugify';
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import slugify from "slugify";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Mulai seeding database...\n');
+  console.log("🌱 Mulai seeding database...\n");
 
   // ========================
   // 1. ADMIN
   // ========================
   const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash('admin123', salt);
+  const hashedPassword = await bcrypt.hash("admin123", salt);
 
   const admin = await prisma.admin.upsert({
-    where: { email: 'admin@bizsparepart24.com' },
+    where: { email: "admin@bizpart24.com" },
     update: {},
     create: {
-      email: 'admin@bizsparepart24.com',
+      email: "admin@bizpart24.com",
       password: hashedPassword,
     },
   });
-  console.log('✅ Admin dibuat:', admin.email);
+  console.log("✅ Admin dibuat:", admin.email);
 
   // ========================
   // 2. CATEGORIES
   // ========================
   const categoryNames = [
-    'Mesin',
-    'Rem',
-    'Suspensi',
-    'Kelistrikan',
-    'Body & Eksterior',
-    'Interior',
-    'Filter',
-    'Oli & Cairan',
-    'Transmisi',
-    'Knalpot',
+    "Mesin",
+    "Rem",
+    "Suspensi",
+    "Kelistrikan",
+    "Body & Eksterior",
+    "Interior",
+    "Filter",
+    "Oli & Cairan",
+    "Transmisi",
+    "Knalpot",
   ];
 
   const categories: Record<string, any> = {};
@@ -55,14 +55,14 @@ async function main() {
   // 3. MAKES (Merek Mobil)
   // ========================
   const makeNames = [
-    'Toyota',
-    'Honda',
-    'Suzuki',
-    'Daihatsu',
-    'Mitsubishi',
-    'Nissan',
-    'Hyundai',
-    'Wuling',
+    "Toyota",
+    "Honda",
+    "Suzuki",
+    "Daihatsu",
+    "Mitsubishi",
+    "Nissan",
+    "Hyundai",
+    "Wuling",
   ];
 
   const makes: Record<string, any> = {};
@@ -81,36 +81,36 @@ async function main() {
   // 4. MODELS
   // ========================
   const modelNames = [
-    'Avanza',
-    'Innova',
-    'Fortuner',
-    'Yaris',
-    'Raize',
-    'Brio',
-    'HR-V',
-    'CR-V',
-    'Civic',
-    'Jazz',
-    'Ertiga',
-    'XL7',
-    'Jimny',
-    'Swift',
-    'Xenia',
-    'Terios',
-    'Ayla',
-    'Sigra',
-    'Xpander',
-    'Pajero Sport',
-    'Triton',
-    'Outlander',
-    'Livina',
-    'Kicks',
-    'X-Trail',
-    'March',
-    'Creta',
-    'Stargazer',
-    'Almaz',
-    'Confero',
+    "Avanza",
+    "Innova",
+    "Fortuner",
+    "Yaris",
+    "Raize",
+    "Brio",
+    "HR-V",
+    "CR-V",
+    "Civic",
+    "Jazz",
+    "Ertiga",
+    "XL7",
+    "Jimny",
+    "Swift",
+    "Xenia",
+    "Terios",
+    "Ayla",
+    "Sigra",
+    "Xpander",
+    "Pajero Sport",
+    "Triton",
+    "Outlander",
+    "Livina",
+    "Kicks",
+    "X-Trail",
+    "March",
+    "Creta",
+    "Stargazer",
+    "Almaz",
+    "Confero",
   ];
 
   const models: Record<string, any> = {};
@@ -128,35 +128,321 @@ async function main() {
   // ========================
   // 5. PRODUCTS
   // ========================
-  console.log('\n� Membuat produk dengan gambar placeholder...\n');
-  
+  console.log("\n� Membuat produk dengan gambar placeholder...\n");
+
   const productsData = [
-    { name: 'Kampas Kopling Set Toyota Avanza 1.3', price: 850000, description: 'Kampas kopling set lengkap (disc, cover, bearing) untuk Toyota Avanza 1.3L. Original quality, tahan lama hingga 60.000 km.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Kampas+Kopling', stock: 25, year: 2022, category: 'Mesin', make: 'Toyota', model: 'Avanza' },
-    { name: 'Timing Belt Kit Honda Brio', price: 650000, description: 'Timing belt kit komplit dengan tensioner dan idle pulley. Cocok untuk Honda Brio 1.2L. Disarankan ganti setiap 80.000 km.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Timing+Belt', stock: 15, year: 2023, category: 'Mesin', make: 'Honda', model: 'Brio' },
-    { name: 'Piston Ring Set Suzuki Ertiga', price: 420000, description: 'Ring piston set untuk Suzuki Ertiga 1.5L. Material high-grade cast iron, presisi tinggi.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Piston+Ring', stock: 10, year: 2021, category: 'Mesin', make: 'Suzuki', model: 'Ertiga' },
-    { name: 'Brake Pad Depan Toyota Innova', price: 350000, description: 'Kampas rem depan ceramic untuk Toyota Innova. Performa pengereman optimal, minim debu, dan tidak berisik.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Brake+Pad', stock: 40, year: 2023, category: 'Rem', make: 'Toyota', model: 'Innova' },
-    { name: 'Disc Brake Rotor Honda HR-V', price: 750000, description: 'Piringan rem / disc brake rotor depan untuk Honda HR-V. Ventilated disc, anti-warp technology.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Disc+Rotor', stock: 12, year: 2022, category: 'Rem', make: 'Honda', model: 'HR-V' },
-    { name: 'Master Rem Daihatsu Xenia', price: 480000, description: 'Master cylinder rem untuk Daihatsu Xenia. Kualitas OEM replacement, sudah termasuk reservoir.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Master+Rem', stock: 8, year: 2021, category: 'Rem', make: 'Daihatsu', model: 'Xenia' },
-    { name: 'Shock Absorber Depan Mitsubishi Xpander', price: 550000, description: 'Shock absorber depan gas-filled untuk Mitsubishi Xpander. Memberikan kenyamanan dan stabilitas berkendara.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Shock+Absorber', stock: 20, year: 2023, category: 'Suspensi', make: 'Mitsubishi', model: 'Xpander' },
-    { name: 'Ball Joint Bawah Toyota Fortuner', price: 280000, description: 'Ball joint lower arm untuk Toyota Fortuner. Heavy duty, cocok untuk penggunaan off-road.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Ball+Joint', stock: 18, year: 2022, category: 'Suspensi', make: 'Toyota', model: 'Fortuner' },
-    { name: 'Bushing Arm Nissan Livina', price: 120000, description: 'Bushing lower arm Nissan Livina. Material polyurethane berkualitas tinggi, tahan lama.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Bushing', stock: 30, year: 2020, category: 'Suspensi', make: 'Nissan', model: 'Livina' },
-    { name: 'Alternator Honda Civic', price: 2850000, description: 'Alternator / dinamo ampere Honda Civic. Output 90A, reconditioned berkualitas tinggi.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Alternator', stock: 5, year: 2022, category: 'Kelistrikan', make: 'Honda', model: 'Civic' },
-    { name: 'Busi Iridium Toyota Yaris Set 4pcs', price: 320000, description: 'Busi iridium set 4 pcs untuk Toyota Yaris. Pembakaran lebih efisien, umur pemakaian lebih panjang.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Busi+Iridium', stock: 50, year: 2023, category: 'Kelistrikan', make: 'Toyota', model: 'Yaris' },
-    { name: 'Starter Motor Suzuki Swift', price: 1500000, description: 'Dinamo starter Suzuki Swift 1.5L. Rebuild quality, garansi 6 bulan.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Starter+Motor', stock: 7, year: 2021, category: 'Kelistrikan', make: 'Suzuki', model: 'Swift' },
-    { name: 'Filter Udara Toyota Raize', price: 85000, description: 'Air filter / saringan udara Toyota Raize. Material cotton-gauze, filtrasi optimal.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Filter+Udara', stock: 60, year: 2023, category: 'Filter', make: 'Toyota', model: 'Raize' },
-    { name: 'Filter Oli Daihatsu Sigra', price: 45000, description: 'Oil filter Daihatsu Sigra. Disarankan ganti setiap penggantian oli mesin.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Filter+Oli', stock: 80, year: 2022, category: 'Filter', make: 'Daihatsu', model: 'Sigra' },
-    { name: 'Filter AC Hyundai Creta', price: 95000, description: 'Cabin air filter / filter AC Hyundai Creta. Anti-bacterial, menjaga udara kabin tetap bersih.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Filter+AC', stock: 35, year: 2023, category: 'Filter', make: 'Hyundai', model: 'Creta' },
-    { name: 'Oli Mesin 5W-30 Fully Synthetic 4L', price: 380000, description: 'Oli mesin fully synthetic 5W-30, cocok untuk semua tipe mobil. API SN Plus, perlindungan maksimal.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Oli+Mesin', stock: 100, year: 2024, category: 'Oli & Cairan', make: 'Toyota', model: 'Avanza' },
-    { name: 'Minyak Rem DOT 4 500ml', price: 65000, description: 'Brake fluid DOT 4 untuk semua tipe kendaraan. Titik didih tinggi, performa stabil.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Minyak+Rem', stock: 70, year: 2024, category: 'Oli & Cairan', make: 'Honda', model: 'Jazz' },
-    { name: 'Headlamp Kiri Wuling Almaz', price: 3200000, description: 'Lampu depan kiri Wuling Almaz. LED projector, kualitas aftermarket premium.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Headlamp', stock: 4, year: 2023, category: 'Body & Eksterior', make: 'Wuling', model: 'Almaz' },
-    { name: 'Spion Elektrik Kanan Hyundai Stargazer', price: 950000, description: 'Kaca spion elektrik kanan Hyundai Stargazer, lengkap dengan cover dan motor. Warna hitam polos (bisa dicat).', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Spion', stock: 6, year: 2023, category: 'Body & Eksterior', make: 'Hyundai', model: 'Stargazer' },
-    { name: 'Bumper Depan Daihatsu Terios', price: 1800000, description: 'Bumper depan Daihatsu Terios. Material PP plastic, siap cat, termasuk bracket.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Bumper', stock: 3, year: 2022, category: 'Body & Eksterior', make: 'Daihatsu', model: 'Terios' },
-    { name: 'Oli Transmisi Matic ATF 1L', price: 150000, description: 'Automatic transmission fluid untuk mobil matic. Kompatibel dengan Dexron III dan Mercon V.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=ATF+Oil', stock: 45, year: 2024, category: 'Transmisi', make: 'Mitsubishi', model: 'Pajero Sport' },
-    { name: 'CV Joint Dalam Suzuki XL7', price: 680000, description: 'Inner CV joint / kopel dalam Suzuki XL7. Sudah termasuk boot dan grease.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=CV+Joint', stock: 10, year: 2022, category: 'Transmisi', make: 'Suzuki', model: 'XL7' },
-    { name: 'Muffler / Knalpot Belakang Nissan Kicks', price: 1200000, description: 'Knalpot belakang / rear muffler Nissan Kicks. Stainless steel, suara halus.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Muffler', stock: 6, year: 2023, category: 'Knalpot', make: 'Nissan', model: 'Kicks' },
-    { name: 'Catalytic Converter Honda CR-V', price: 4500000, description: 'Catalytic converter Honda CR-V. Lolos uji emisi, material keramik berkualitas tinggi.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Catalytic', stock: 3, year: 2022, category: 'Knalpot', make: 'Honda', model: 'CR-V' },
-    { name: 'Kaca Spion Dalam Wuling Confero', price: 180000, description: 'Kaca spion dalam / rear view mirror Wuling Confero. Anti silau, mudah dipasang.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Rearview+Mirror', stock: 15, year: 2022, category: 'Interior', make: 'Wuling', model: 'Confero' },
-    { name: 'Handle Pintu Dalam Daihatsu Ayla', price: 75000, description: 'Handle tarikan pintu dalam Daihatsu Ayla, warna hitam. Material plastik ABS kuat.', image: 'https://placehold.co/800x600/e5e7eb/1f2937?text=Door+Handle', stock: 20, year: 2021, category: 'Interior', make: 'Daihatsu', model: 'Ayla' },
+    {
+      name: "Kampas Kopling Set Toyota Avanza 1.3",
+      price: 850000,
+      description:
+        "Kampas kopling set lengkap (disc, cover, bearing) untuk Toyota Avanza 1.3L. Original quality, tahan lama hingga 60.000 km.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Kampas+Kopling",
+      stock: 25,
+      year: 2022,
+      category: "Mesin",
+      make: "Toyota",
+      model: "Avanza",
+    },
+    {
+      name: "Timing Belt Kit Honda Brio",
+      price: 650000,
+      description:
+        "Timing belt kit komplit dengan tensioner dan idle pulley. Cocok untuk Honda Brio 1.2L. Disarankan ganti setiap 80.000 km.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Timing+Belt",
+      stock: 15,
+      year: 2023,
+      category: "Mesin",
+      make: "Honda",
+      model: "Brio",
+    },
+    {
+      name: "Piston Ring Set Suzuki Ertiga",
+      price: 420000,
+      description:
+        "Ring piston set untuk Suzuki Ertiga 1.5L. Material high-grade cast iron, presisi tinggi.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Piston+Ring",
+      stock: 10,
+      year: 2021,
+      category: "Mesin",
+      make: "Suzuki",
+      model: "Ertiga",
+    },
+    {
+      name: "Brake Pad Depan Toyota Innova",
+      price: 350000,
+      description:
+        "Kampas rem depan ceramic untuk Toyota Innova. Performa pengereman optimal, minim debu, dan tidak berisik.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Brake+Pad",
+      stock: 40,
+      year: 2023,
+      category: "Rem",
+      make: "Toyota",
+      model: "Innova",
+    },
+    {
+      name: "Disc Brake Rotor Honda HR-V",
+      price: 750000,
+      description:
+        "Piringan rem / disc brake rotor depan untuk Honda HR-V. Ventilated disc, anti-warp technology.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Disc+Rotor",
+      stock: 12,
+      year: 2022,
+      category: "Rem",
+      make: "Honda",
+      model: "HR-V",
+    },
+    {
+      name: "Master Rem Daihatsu Xenia",
+      price: 480000,
+      description:
+        "Master cylinder rem untuk Daihatsu Xenia. Kualitas OEM replacement, sudah termasuk reservoir.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Master+Rem",
+      stock: 8,
+      year: 2021,
+      category: "Rem",
+      make: "Daihatsu",
+      model: "Xenia",
+    },
+    {
+      name: "Shock Absorber Depan Mitsubishi Xpander",
+      price: 550000,
+      description:
+        "Shock absorber depan gas-filled untuk Mitsubishi Xpander. Memberikan kenyamanan dan stabilitas berkendara.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Shock+Absorber",
+      stock: 20,
+      year: 2023,
+      category: "Suspensi",
+      make: "Mitsubishi",
+      model: "Xpander",
+    },
+    {
+      name: "Ball Joint Bawah Toyota Fortuner",
+      price: 280000,
+      description:
+        "Ball joint lower arm untuk Toyota Fortuner. Heavy duty, cocok untuk penggunaan off-road.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Ball+Joint",
+      stock: 18,
+      year: 2022,
+      category: "Suspensi",
+      make: "Toyota",
+      model: "Fortuner",
+    },
+    {
+      name: "Bushing Arm Nissan Livina",
+      price: 120000,
+      description:
+        "Bushing lower arm Nissan Livina. Material polyurethane berkualitas tinggi, tahan lama.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Bushing",
+      stock: 30,
+      year: 2020,
+      category: "Suspensi",
+      make: "Nissan",
+      model: "Livina",
+    },
+    {
+      name: "Alternator Honda Civic",
+      price: 2850000,
+      description:
+        "Alternator / dinamo ampere Honda Civic. Output 90A, reconditioned berkualitas tinggi.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Alternator",
+      stock: 5,
+      year: 2022,
+      category: "Kelistrikan",
+      make: "Honda",
+      model: "Civic",
+    },
+    {
+      name: "Busi Iridium Toyota Yaris Set 4pcs",
+      price: 320000,
+      description:
+        "Busi iridium set 4 pcs untuk Toyota Yaris. Pembakaran lebih efisien, umur pemakaian lebih panjang.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Busi+Iridium",
+      stock: 50,
+      year: 2023,
+      category: "Kelistrikan",
+      make: "Toyota",
+      model: "Yaris",
+    },
+    {
+      name: "Starter Motor Suzuki Swift",
+      price: 1500000,
+      description:
+        "Dinamo starter Suzuki Swift 1.5L. Rebuild quality, garansi 6 bulan.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Starter+Motor",
+      stock: 7,
+      year: 2021,
+      category: "Kelistrikan",
+      make: "Suzuki",
+      model: "Swift",
+    },
+    {
+      name: "Filter Udara Toyota Raize",
+      price: 85000,
+      description:
+        "Air filter / saringan udara Toyota Raize. Material cotton-gauze, filtrasi optimal.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Filter+Udara",
+      stock: 60,
+      year: 2023,
+      category: "Filter",
+      make: "Toyota",
+      model: "Raize",
+    },
+    {
+      name: "Filter Oli Daihatsu Sigra",
+      price: 45000,
+      description:
+        "Oil filter Daihatsu Sigra. Disarankan ganti setiap penggantian oli mesin.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Filter+Oli",
+      stock: 80,
+      year: 2022,
+      category: "Filter",
+      make: "Daihatsu",
+      model: "Sigra",
+    },
+    {
+      name: "Filter AC Hyundai Creta",
+      price: 95000,
+      description:
+        "Cabin air filter / filter AC Hyundai Creta. Anti-bacterial, menjaga udara kabin tetap bersih.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Filter+AC",
+      stock: 35,
+      year: 2023,
+      category: "Filter",
+      make: "Hyundai",
+      model: "Creta",
+    },
+    {
+      name: "Oli Mesin 5W-30 Fully Synthetic 4L",
+      price: 380000,
+      description:
+        "Oli mesin fully synthetic 5W-30, cocok untuk semua tipe mobil. API SN Plus, perlindungan maksimal.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Oli+Mesin",
+      stock: 100,
+      year: 2024,
+      category: "Oli & Cairan",
+      make: "Toyota",
+      model: "Avanza",
+    },
+    {
+      name: "Minyak Rem DOT 4 500ml",
+      price: 65000,
+      description:
+        "Brake fluid DOT 4 untuk semua tipe kendaraan. Titik didih tinggi, performa stabil.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Minyak+Rem",
+      stock: 70,
+      year: 2024,
+      category: "Oli & Cairan",
+      make: "Honda",
+      model: "Jazz",
+    },
+    {
+      name: "Headlamp Kiri Wuling Almaz",
+      price: 3200000,
+      description:
+        "Lampu depan kiri Wuling Almaz. LED projector, kualitas aftermarket premium.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Headlamp",
+      stock: 4,
+      year: 2023,
+      category: "Body & Eksterior",
+      make: "Wuling",
+      model: "Almaz",
+    },
+    {
+      name: "Spion Elektrik Kanan Hyundai Stargazer",
+      price: 950000,
+      description:
+        "Kaca spion elektrik kanan Hyundai Stargazer, lengkap dengan cover dan motor. Warna hitam polos (bisa dicat).",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Spion",
+      stock: 6,
+      year: 2023,
+      category: "Body & Eksterior",
+      make: "Hyundai",
+      model: "Stargazer",
+    },
+    {
+      name: "Bumper Depan Daihatsu Terios",
+      price: 1800000,
+      description:
+        "Bumper depan Daihatsu Terios. Material PP plastic, siap cat, termasuk bracket.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Bumper",
+      stock: 3,
+      year: 2022,
+      category: "Body & Eksterior",
+      make: "Daihatsu",
+      model: "Terios",
+    },
+    {
+      name: "Oli Transmisi Matic ATF 1L",
+      price: 150000,
+      description:
+        "Automatic transmission fluid untuk mobil matic. Kompatibel dengan Dexron III dan Mercon V.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=ATF+Oil",
+      stock: 45,
+      year: 2024,
+      category: "Transmisi",
+      make: "Mitsubishi",
+      model: "Pajero Sport",
+    },
+    {
+      name: "CV Joint Dalam Suzuki XL7",
+      price: 680000,
+      description:
+        "Inner CV joint / kopel dalam Suzuki XL7. Sudah termasuk boot dan grease.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=CV+Joint",
+      stock: 10,
+      year: 2022,
+      category: "Transmisi",
+      make: "Suzuki",
+      model: "XL7",
+    },
+    {
+      name: "Muffler / Knalpot Belakang Nissan Kicks",
+      price: 1200000,
+      description:
+        "Knalpot belakang / rear muffler Nissan Kicks. Stainless steel, suara halus.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Muffler",
+      stock: 6,
+      year: 2023,
+      category: "Knalpot",
+      make: "Nissan",
+      model: "Kicks",
+    },
+    {
+      name: "Catalytic Converter Honda CR-V",
+      price: 4500000,
+      description:
+        "Catalytic converter Honda CR-V. Lolos uji emisi, material keramik berkualitas tinggi.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Catalytic",
+      stock: 3,
+      year: 2022,
+      category: "Knalpot",
+      make: "Honda",
+      model: "CR-V",
+    },
+    {
+      name: "Kaca Spion Dalam Wuling Confero",
+      price: 180000,
+      description:
+        "Kaca spion dalam / rear view mirror Wuling Confero. Anti silau, mudah dipasang.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Rearview+Mirror",
+      stock: 15,
+      year: 2022,
+      category: "Interior",
+      make: "Wuling",
+      model: "Confero",
+    },
+    {
+      name: "Handle Pintu Dalam Daihatsu Ayla",
+      price: 75000,
+      description:
+        "Handle tarikan pintu dalam Daihatsu Ayla, warna hitam. Material plastik ABS kuat.",
+      image: "https://placehold.co/800x600/e5e7eb/1f2937?text=Door+Handle",
+      stock: 20,
+      year: 2021,
+      category: "Interior",
+      make: "Daihatsu",
+      model: "Ayla",
+    },
   ];
 
   let productCount = 0;
@@ -178,13 +464,13 @@ async function main() {
   }
   console.log(`✅ ${productCount} produk dibuat`);
 
-  console.log('\n🎉 Seeding selesai!');
-  console.log('   Admin login: admin@bizsparepart24.com / admin123');
+  console.log("\n🎉 Seeding selesai!");
+  console.log("   Admin login: admin@BIZPART24.com / admin123");
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error saat seeding:', e);
+    console.error("❌ Error saat seeding:", e);
     process.exit(1);
   })
   .finally(async () => {

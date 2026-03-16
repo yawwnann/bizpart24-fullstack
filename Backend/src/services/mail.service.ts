@@ -5,10 +5,10 @@ dotenv.config();
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@bizsparepart24.com";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@bizpart24.com";
 const BANK_NAME = process.env.BANK_NAME || "BCA";
 const BANK_ACCOUNT = process.env.BANK_ACCOUNT_NUMBER || "1234567890";
-const BANK_HOLDER = process.env.BANK_ACCOUNT_NAME || "PT BIZSPAREPART24";
+const BANK_HOLDER = process.env.BANK_ACCOUNT_NAME || "PT BIZPART24";
 
 export class MailService {
   // 1. Kirim Email ke Customer: Pesanan Dibuat (Menunggu Ongkir)
@@ -17,13 +17,13 @@ export class MailService {
       if (!order.email) return;
 
       const { data, error } = await resend.emails.send({
-        from: `BIZSPAREPART24 <${FROM_EMAIL}>`,
+        from: `BIZPART24 <${FROM_EMAIL}>`,
         to: [order.email],
         subject: `Invoice #${order.orderId} - Menunggu Konfirmasi Ongkir`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
             <div style="background-color: #D92D20; padding: 20px; text-align: center;">
-              <h1 style="color: white; margin: 0;">BIZSPAREPART24</h1>
+              <h1 style="color: white; margin: 0;">BIZPART24</h1>
             </div>
             <div style="padding: 20px;">
               <h2>Terima Kasih atas Pesanan Anda!</h2>
@@ -43,7 +43,7 @@ export class MailService {
               <p>Jika ada pertanyaan, silakan hubungi kami via WhatsApp.</p>
             </div>
             <div style="background-color: #f1f1f1; padding: 15px; text-align: center; font-size: 12px; color: #666;">
-              &copy; ${new Date().getFullYear()} BIZSPAREPART24. All rights reserved.
+              &copy; ${new Date().getFullYear()} BIZPART24. All rights reserved.
             </div>
           </div>
         `,
@@ -132,13 +132,13 @@ export class MailService {
         order.items ?? [];
 
       const { data, error } = await resend.emails.send({
-        from: `BIZSPAREPART24 <${FROM_EMAIL}>`,
+        from: `BIZPART24 <${FROM_EMAIL}>`,
         to: [order.email],
         subject: `Tagihan Updated #${order.orderId} - Silakan Lakukan Pembayaran`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
             <div style="background-color: #D92D20; padding: 20px; text-align: center;">
-              <h1 style="color: white; margin: 0;">BIZSPAREPART24</h1>
+              <h1 style="color: white; margin: 0;">BIZPART24</h1>
             </div>
             <div style="padding: 20px;">
               <h2>Total Tagihan Anda Telah Diupdate!</h2>
@@ -188,7 +188,7 @@ export class MailService {
               </div>
             </div>
             <div style="background-color: #f1f1f1; padding: 15px; text-align: center; font-size: 12px; color: #666;">
-              &copy; ${new Date().getFullYear()} BIZSPAREPART24. All rights reserved.
+              &copy; ${new Date().getFullYear()} BIZPART24. All rights reserved.
             </div>
           </div>
         `,
@@ -219,7 +219,7 @@ export class MailService {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
             <div style="background-color: #111; padding: 18px 24px; display: flex; align-items: center; gap: 12px;">
-              <h2 style="color: white; margin: 0; font-size: 18px;">BIZSPAREPART24 &mdash; Bukti Pembayaran Masuk</h2>
+              <h2 style="color: white; margin: 0; font-size: 18px;">BIZPART24 &mdash; Bukti Pembayaran Masuk</h2>
             </div>
             <div style="padding: 24px;">
               <p style="margin: 0 0 16px;">Pelanggan <strong>${order.customerName}</strong> baru saja mengunggah bukti transfer untuk pesanan:</p>
@@ -270,7 +270,7 @@ export class MailService {
               </div>
             </div>
             <div style="background-color: #f5f5f5; padding: 14px 24px; text-align: center; font-size: 12px; color: #999;">
-              &copy; ${new Date().getFullYear()} BIZSPAREPART24. Notifikasi Sistem.
+              &copy; ${new Date().getFullYear()} BIZPART24. Notifikasi Sistem.
             </div>
           </div>
         `,
@@ -291,7 +291,7 @@ export class MailService {
       if (!order.email) return;
 
       const { data, error } = await resend.emails.send({
-        from: `BIZSPAREPART24 <${FROM_EMAIL}>`,
+        from: `BIZPART24 <${FROM_EMAIL}>`,
         to: [order.email],
         subject: order.trackingNumber
           ? `Pesanan #${order.orderId} Dikirim via ${order.courierType || "Kurir"} - Resi: ${order.trackingNumber}`
@@ -299,7 +299,7 @@ export class MailService {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
             <div style="background-color: #D92D20; padding: 20px; text-align: center;">
-              <h1 style="color: white; margin: 0;">BIZSPAREPART24</h1>
+              <h1 style="color: white; margin: 0;">BIZPART24</h1>
             </div>
             <div style="padding: 24px;">
               <h2 style="margin-top: 0;">Paket Anda Sedang Dalam Perjalanan! </h2>
@@ -351,10 +351,10 @@ export class MailService {
                 </table>
               </div>
 
-              <p style="font-size: 13px; color: #666;">Terima kasih telah berbelanja di BIZSPAREPART24. Jika ada pertanyaan, hubungi kami via WhatsApp.</p>
+              <p style="font-size: 13px; color: #666;">Terima kasih telah berbelanja di BIZPART24. Jika ada pertanyaan, hubungi kami via WhatsApp.</p>
             </div>
             <div style="background-color: #f5f5f5; padding: 14px; text-align: center; font-size: 12px; color: #999;">
-              &copy; ${new Date().getFullYear()} BIZSPAREPART24. All rights reserved.
+              &copy; ${new Date().getFullYear()} BIZPART24. All rights reserved.
             </div>
           </div>
         `,
@@ -374,13 +374,13 @@ export class MailService {
   ) {
     try {
       const { data, error } = await resend.emails.send({
-        from: `BIZSPAREPART24 <${FROM_EMAIL}>`,
+        from: `BIZPART24 <${FROM_EMAIL}>`,
         to: [ADMIN_EMAIL],
         subject: `✅ Pesanan #${order.orderId} Telah Diterima oleh ${order.customerName}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
             <div style="background-color: #059669; padding: 20px; text-align: center;">
-              <h1 style="color: white; margin: 0;">BIZSPAREPART24</h1>
+              <h1 style="color: white; margin: 0;">BIZPART24</h1>
             </div>
             <div style="padding: 24px;">
               <h2 style="margin-top: 0; color: #059669;">Pesanan Diterima! ✅</h2>
@@ -426,7 +426,7 @@ export class MailService {
 
             </div>
             <div style="background-color: #f5f5f5; padding: 14px; text-align: center; font-size: 12px; color: #999;">
-              &copy; ${new Date().getFullYear()} BIZSPAREPART24. All rights reserved.
+              &copy; ${new Date().getFullYear()} BIZPART24. All rights reserved.
             </div>
           </div>
         `,

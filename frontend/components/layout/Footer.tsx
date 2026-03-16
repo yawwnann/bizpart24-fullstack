@@ -152,7 +152,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center text-xs gap-4">
-          <p>&copy; 2026 BIZSPAREPART24. Hak Cipta Dilindungi.</p>
+          <p>&copy; 2026 BIZPART24. Hak Cipta Dilindungi.</p>
           <div className="flex gap-6">
             <Link
               href="/tutorial"

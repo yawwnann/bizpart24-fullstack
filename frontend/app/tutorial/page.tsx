@@ -59,7 +59,7 @@ export default function TutorialPage() {
       title: "Lakukan Pembayaran",
       icon: CreditCard,
       description:
-        "Transfer pembayaran sesuai total tagihan ke rekening resmi BIZSPAREPART24 yang tertera.",
+        "Transfer pembayaran sesuai total tagihan ke rekening resmi BIZPART24 yang tertera.",
       steps: [
         "Transfer sesuai nominal",
         "Simpan bukti transfer",
@@ -94,7 +94,7 @@ export default function TutorialPage() {
 
   const importantNotes = [
     "Ongkos kirim menyesuaikan lokasi dan berat barang.",
-    "Pembayaran hanya ke rekening resmi atas nama PT BIZSPAREPART24.",
+    "Pembayaran hanya ke rekening resmi atas nama PT BIZPART24.",
     "Pastikan nomor WhatsApp yang didaftarkan aktif untuk komunikasi.",
     "Simpan ID Pesanan Anda untuk pengecekan status.",
   ];
@@ -115,7 +115,7 @@ export default function TutorialPage() {
             Panduan Pelanggan
           </span>
           <h1 className="text-3xl md:text-5xl font-bold mb-6 leading-tight">
-            Cara Berbelanja di BIZSPAREPART24
+            Cara Berbelanja di BIZPART24
           </h1>
           <p className="text-gray-400 text-lg leading-relaxed">
             Ikuti panduan mudah berikut untuk memesan suku cadang asli dan

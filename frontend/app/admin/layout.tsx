@@ -74,7 +74,7 @@ export default function AdminLayout({
             <div className="flex items-center gap-3">
               <Image
                 src="/logo.png"
-                alt="BIZSPAREPART24"
+                alt="BIZPART24"
                 width={80}
                 height={32}
                 className="h-8 w-auto object-contain brightness-0 invert"
