@@ -91,7 +91,7 @@ export function Footer() {
             <ul className="space-y-4 text-sm">
               <li>
                 <Link
-                  href="/dashboard"
+                  href="/"
                   className="hover:text-[#D92D20] transition-colors"
                 >
                   Beranda
@@ -121,13 +121,33 @@ export function Footer() {
           {/* Alamat Column */}
           <div>
             <h3 className="text-white font-bold text-lg mb-6">Alamat</h3>
-            <p className="text-sm leading-relaxed">
-              Jalan Raya Pati-Gunungwungkal KM 4
-              <br />
-              Desa Sumberrejo RT 3/6, Kecamatan Gunungwungkal
-              <br />
-              Pati, Jawa Tengah
-            </p>
+            <div className="space-y-6 text-sm">
+              <div>
+                <p className="text-white font-semibold mb-2">Jakarta</p>
+                <p className="leading-relaxed">
+                  Mall MGK
+                  <br />
+                  Jl. Angkasa Raya No. B6
+                  <br />
+                  Gunung Sahari Selatan, Kemayoran
+                  <br />
+                  Jakarta Pusat, DKI Jakarta 10610
+                </p>
+              </div>
+
+              <div>
+                <p className="text-white font-semibold mb-2">Pati</p>
+                <p className="leading-relaxed">
+                  Jalan Raya Pati-Gunungwungkal KM 4
+                  <br />
+                  Desa Sumberrejo RT 3/6
+                  <br />
+                  Kec. Gunungwungkal, Pati
+                  <br />
+                  Jawa Tengah
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -146,10 +166,7 @@ export function Footer() {
             >
               Katalog
             </Link>
-            <Link
-              href="/dashboard"
-              className="hover:text-white transition-colors"
-            >
+            <Link href="/" className="hover:text-white transition-colors">
               Beranda
             </Link>
           </div>
