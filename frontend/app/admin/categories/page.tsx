@@ -1,56 +1,123 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Loader2, Plus, Search, Trash2, Tag, X, Check } from "lucide-react"
-import api from "@/lib/api"
-import { Input } from "@/components/ui/Input"
+import { useEffect, useState } from "react";
+import {
+  Loader2,
+  Plus,
+  Search,
+  Trash2,
+  Tag,
+  X,
+  Check,
+  Edit,
+} from "lucide-react";
+import api from "@/lib/api";
+import { Input } from "@/components/ui/Input";
 
 export default function AdminCategoriesPage() {
-  const [categories, setCategories] = useState<any[]>([])
-  const [loading, setLoading]       = useState(true)
-  const [search, setSearch]         = useState("")
-  const [isAdding, setIsAdding]     = useState(false)
-  const [newName, setNewName]       = useState("")
-  const [submitting, setSubmitting] = useState(false)
+  const [categories, setCategories] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
 
-  useEffect(() => { fetchCategories() }, [])
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   const fetchCategories = async () => {
     try {
-      const res = await api.get('/categories')
-      if (res.data.success) setCategories(res.data.data)
-    } catch (e) { console.error(e) }
-    finally { setLoading(false) }
-  }
+      const res = await api.get("/categories");
+      if (res.data.success) setCategories(res.data.data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Yakin ingin menghapus kategori ini?")) return
+    if (!confirm("Yakin ingin menghapus kategori ini?")) return;
     try {
-      const token = localStorage.getItem("adminToken")
-      await api.delete(`/categories/${id}`, { headers: { Authorization: `Bearer ${token}` } })
-      fetchCategories()
-    } catch { alert("Gagal menghapus kategori") }
-  }
+      const token = localStorage.getItem("adminToken");
+      await api.delete(`/categories/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchCategories();
+    } catch {
+      alert("Gagal menghapus kategori");
+    }
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newName.trim()) return
-    setSubmitting(true)
+    e.preventDefault();
+    if (!newName.trim()) return;
+    setSubmitting(true);
     try {
-      const token = localStorage.getItem("adminToken")
-      const res = await api.post('/categories', { name: newName }, { headers: { Authorization: `Bearer ${token}` } })
-      if (res.data.success) { setIsAdding(false); setNewName(""); fetchCategories() }
-    } catch { alert("Gagal membuat kategori") }
-    finally { setSubmitting(false) }
-  }
+      const token = localStorage.getItem("adminToken");
+      const res = await api.post(
+        "/categories",
+        { name: newName },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (res.data.success) {
+        setIsAdding(false);
+        setNewName("");
+        fetchCategories();
+      }
+    } catch {
+      alert("Gagal membuat kategori");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-  const filtered = categories.filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
+  const handleEdit = (category: any) => {
+    setEditingId(category.id);
+    setEditName(category.name);
+  };
 
-  if (loading) return (
-    <div className="flex h-96 items-center justify-center">
-      <Loader2 className="w-7 h-7 animate-spin text-gray-300" />
-    </div>
-  )
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editName.trim() || !editingId) return;
+    setSubmitting(true);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await api.put(
+        `/categories/${editingId}`,
+        { name: editName },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (res.data.success) {
+        setEditingId(null);
+        setEditName("");
+        fetchCategories();
+      }
+    } catch {
+      alert("Gagal mengupdate kategori");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditName("");
+  };
+
+  const filtered = categories.filter((c) =>
+    c.name.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  if (loading)
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="w-7 h-7 animate-spin text-gray-300" />
+      </div>
+    );
 
   return (
     <div className="space-y-6">
@@ -58,7 +125,9 @@ export default function AdminCategoriesPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Kategori</h1>
-          <p className="text-sm text-gray-400 mt-0.5">{categories.length} kategori tersedia</p>
+          <p className="text-sm text-gray-400 mt-0.5">
+            {categories.length} kategori tersedia
+          </p>
         </div>
         <div className="flex gap-3">
           <div className="relative w-full md:w-56">
@@ -71,7 +140,10 @@ export default function AdminCategoriesPage() {
             />
           </div>
           <button
-            onClick={() => { setIsAdding(!isAdding); setNewName("") }}
+            onClick={() => {
+              setIsAdding(!isAdding);
+              setNewName("");
+            }}
             className="px-4 py-2 bg-gray-900 hover:bg-gray-700 text-white rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors whitespace-nowrap"
           >
             <Plus className="w-4 h-4" /> Tambah Baru
@@ -82,7 +154,9 @@ export default function AdminCategoriesPage() {
       {/* Inline Add Form */}
       {isAdding && (
         <div className="bg-white rounded-xl border border-gray-100 p-5">
-          <p className="text-sm font-semibold text-gray-900 mb-3">Tambah Kategori Baru</p>
+          <p className="text-sm font-semibold text-gray-900 mb-3">
+            Tambah Kategori Baru
+          </p>
           <form onSubmit={handleCreate} className="flex gap-2">
             <Input
               placeholder="Nama kategori, contoh: Oli Mesin"
@@ -96,7 +170,11 @@ export default function AdminCategoriesPage() {
               disabled={submitting || !newName.trim()}
               className="px-4 bg-gray-900 hover:bg-gray-700 text-white rounded-lg text-sm font-medium flex items-center gap-1.5 disabled:opacity-50 transition-colors"
             >
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+              {submitting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Check className="w-4 h-4" />
+              )}
               Simpan
             </button>
             <button
@@ -116,39 +194,97 @@ export default function AdminCategoriesPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Nama</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">Slug</th>
+                <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                  Nama
+                </th>
+                <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                  Slug
+                </th>
                 <th className="px-5 py-3.5" />
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {filtered.length > 0 ? filtered.map((cat) => (
-                <tr key={cat.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
-                        <Tag className="w-3.5 h-3.5 text-gray-400" />
+              {filtered.length > 0 ? (
+                filtered.map((cat) => (
+                  <tr
+                    key={cat.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                          <Tag className="w-3.5 h-3.5 text-gray-400" />
+                        </div>
+                        {editingId === cat.id ? (
+                          <form
+                            onSubmit={handleUpdate}
+                            className="flex items-center gap-2 flex-1"
+                          >
+                            <Input
+                              value={editName}
+                              onChange={(e) => setEditName(e.target.value)}
+                              className="flex-1 h-8 text-sm bg-gray-50 border-gray-200 focus-visible:ring-0 focus-visible:border-gray-300"
+                              autoFocus
+                            />
+                            <button
+                              type="submit"
+                              disabled={submitting || !editName.trim()}
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors disabled:opacity-50"
+                            >
+                              {submitting ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Check className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={cancelEdit}
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </form>
+                        ) : (
+                          <span className="font-medium text-gray-900">
+                            {cat.name}
+                          </span>
+                        )}
                       </div>
-                      <span className="font-medium text-gray-900">{cat.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <span className="font-mono text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded">{cat.slug}</span>
-                  </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <button
-                      onClick={() => handleDelete(cat.id)}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              )) : (
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className="font-mono text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded">
+                        {cat.slug}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        {editingId !== cat.id && (
+                          <button
+                            onClick={() => handleEdit(cat)}
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDelete(cat.id)}
+                          disabled={editingId === cat.id}
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
                 <tr>
                   <td colSpan={3} className="px-5 py-14 text-center">
                     <Tag className="w-8 h-8 text-gray-200 mx-auto mb-2" />
-                    <p className="text-sm text-gray-300">Tidak ada kategori ditemukan.</p>
+                    <p className="text-sm text-gray-300">
+                      Tidak ada kategori ditemukan.
+                    </p>
                   </td>
                 </tr>
               )}
@@ -157,5 +293,5 @@ export default function AdminCategoriesPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
