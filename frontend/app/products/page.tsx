@@ -6,7 +6,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { ProductCardSkeleton } from "@/components/ui/ProductCardSkeleton";
-import { Filter, Loader2, X, ChevronDown } from "lucide-react";
+import { Filter, Loader2, X, ChevronDown, Search } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import api from "@/lib/api";
@@ -57,6 +57,7 @@ function ProductCatalogContent() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [categorySearch, setCategorySearch] = useState("");
   const [pagination, setPagination] = useState({
     total: 0,
     totalPages: 0,
@@ -67,6 +68,11 @@ function ProductCatalogContent() {
   });
 
   const { categories } = useFetchCategories();
+
+  // Filter categories based on search
+  const filteredCategories = categories.filter((cat) =>
+    cat.name.toLowerCase().includes(categorySearch.toLowerCase()),
+  );
 
   useEffect(() => {
     // Reset to page 1 when any filter changes
@@ -291,27 +297,41 @@ function ProductCatalogContent() {
           <div className="flex flex-col md:flex-row md:items-start gap-8">
             {/* Sidebar - hidden on mobile */}
             <aside className="hidden md:block w-full md:w-64 shrink-0 md:sticky md:top-8 md:self-start">
-              <div className="space-y-8">
-                <div>
-                  <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <Filter className="w-4 h-4" /> Filter Kategori
-                  </h3>
-                  <div className="space-y-1.5">
-                    <Link
-                      href="/products"
-                      className={`block text-sm px-2 py-1 rounded-md transition-all ${
-                        !categoryParam
-                          ? "font-bold text-[#D92D20] bg-red-50"
-                          : "text-gray-600 hover:text-[#D92D20] hover:bg-gray-50"
-                      }`}
-                    >
-                      Semua Kategori
-                    </Link>
-                    {categories.map((cat) => (
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <Filter className="w-4 h-4" /> Filter Kategori
+                </h3>
+
+                {/* Search Box */}
+                <div className="relative mb-3">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Cari kategori..."
+                    value={categorySearch}
+                    onChange={(e) => setCategorySearch(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D92D20] focus:border-transparent"
+                  />
+                </div>
+
+                {/* Category List with Scroll */}
+                <div className="space-y-1 max-h-[calc(100vh-280px)] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                  <Link
+                    href="/products"
+                    className={`block text-sm px-3 py-2 rounded-md transition-all ${
+                      !categoryParam
+                        ? "font-bold text-[#D92D20] bg-red-50"
+                        : "text-gray-600 hover:text-[#D92D20] hover:bg-gray-50"
+                    }`}
+                  >
+                    Semua Kategori
+                  </Link>
+                  {filteredCategories.length > 0 ? (
+                    filteredCategories.map((cat) => (
                       <Link
                         key={cat.id}
                         href={`/products?category=${cat.name.toLowerCase()}`}
-                        className={`block text-sm px-2 py-1 rounded-md transition-all ${
+                        className={`block text-sm px-3 py-2 rounded-md transition-all ${
                           categoryParam &&
                           cat.name.toLowerCase() === categoryParam.toLowerCase()
                             ? "font-bold text-[#D92D20] bg-red-50"
@@ -320,8 +340,20 @@ function ProductCatalogContent() {
                       >
                         {cat.name}
                       </Link>
-                    ))}
-                  </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-400 px-3 py-2">
+                      Kategori tidak ditemukan
+                    </p>
+                  )}
+                </div>
+
+                {/* Category Count */}
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <p className="text-xs text-gray-500">
+                    Menampilkan {filteredCategories.length} dari{" "}
+                    {categories.length} kategori
+                  </p>
                 </div>
               </div>
             </aside>
@@ -333,17 +365,35 @@ function ProductCatalogContent() {
                   className="fixed inset-0 bg-black/50 z-40 md:hidden"
                   onClick={() => setShowCategoryModal(false)}
                 />
-                <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-2xl md:hidden max-h-[75vh] flex flex-col">
+                <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-2xl md:hidden max-h-[80vh] flex flex-col">
                   <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
                     <h3 className="font-bold text-gray-900">Filter Kategori</h3>
                     <button onClick={() => setShowCategoryModal(false)}>
                       <X className="w-5 h-5 text-gray-500" />
                     </button>
                   </div>
-                  <div className="overflow-y-auto p-4 space-y-1">
+
+                  {/* Search Box Mobile */}
+                  <div className="px-4 pt-4 pb-2">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Cari kategori..."
+                        value={categorySearch}
+                        onChange={(e) => setCategorySearch(e.target.value)}
+                        className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D92D20] focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="overflow-y-auto p-4 space-y-1 flex-1">
                     <Link
                       href="/products"
-                      onClick={() => setShowCategoryModal(false)}
+                      onClick={() => {
+                        setShowCategoryModal(false);
+                        setCategorySearch("");
+                      }}
                       className={`block text-sm px-3 py-2.5 rounded-lg transition-all ${
                         !categoryParam
                           ? "font-bold text-[#D92D20] bg-red-50"
@@ -352,21 +402,39 @@ function ProductCatalogContent() {
                     >
                       Semua Kategori
                     </Link>
-                    {categories.map((cat) => (
-                      <Link
-                        key={cat.id}
-                        href={`/products?category=${cat.name.toLowerCase()}`}
-                        onClick={() => setShowCategoryModal(false)}
-                        className={`block text-sm px-3 py-2.5 rounded-lg transition-all ${
-                          categoryParam &&
-                          cat.name.toLowerCase() === categoryParam.toLowerCase()
-                            ? "font-bold text-[#D92D20] bg-red-50"
-                            : "text-gray-700 hover:text-[#D92D20] hover:bg-gray-50"
-                        }`}
-                      >
-                        {cat.name}
-                      </Link>
-                    ))}
+                    {filteredCategories.length > 0 ? (
+                      filteredCategories.map((cat) => (
+                        <Link
+                          key={cat.id}
+                          href={`/products?category=${cat.name.toLowerCase()}`}
+                          onClick={() => {
+                            setShowCategoryModal(false);
+                            setCategorySearch("");
+                          }}
+                          className={`block text-sm px-3 py-2.5 rounded-lg transition-all ${
+                            categoryParam &&
+                            cat.name.toLowerCase() ===
+                              categoryParam.toLowerCase()
+                              ? "font-bold text-[#D92D20] bg-red-50"
+                              : "text-gray-700 hover:text-[#D92D20] hover:bg-gray-50"
+                          }`}
+                        >
+                          {cat.name}
+                        </Link>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-400 px-3 py-2 text-center">
+                        Kategori tidak ditemukan
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Footer with count */}
+                  <div className="px-5 py-3 border-t border-gray-100 bg-gray-50">
+                    <p className="text-xs text-gray-500 text-center">
+                      {filteredCategories.length} dari {categories.length}{" "}
+                      kategori
+                    </p>
                   </div>
                 </div>
               </>

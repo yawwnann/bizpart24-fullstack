@@ -363,48 +363,52 @@ function NavbarInner() {
                 </svg>
               </button>
 
-              {/* Mega Dropdown */}
               <div className="absolute top-full left-0 pt-0 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                {/* invisible bridge to keep hover active */}
                 <div className="h-1 w-full" />
-                <div className="bg-white rounded-xl shadow-2xl border border-gray-100 p-6 min-w-170">
-                  {/* Header */}
-                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                      Semua Kategori Produk
-                    </span>
+                <div className="bg-white rounded-xl shadow-2xl border border-gray-100 p-4 w-[850px] max-h-[65vh] flex flex-col">
+                  <div className="flex items-center justify-between gap-3 mb-3 pb-2 border-b border-gray-100">
+                    <div className="flex items-center gap-2 flex-1">
+                      <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">
+                        Kategori Produk
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        ({categories.length})
+                      </span>
+                    </div>
                     <Link
                       href="/products"
-                      className="text-xs font-semibold text-[#D92D20] hover:underline"
+                      className="text-xs font-semibold text-[#D92D20] hover:underline whitespace-nowrap"
                     >
                       Lihat Semua →
                     </Link>
                   </div>
-
-                  {/* Categories Grid - 4 columns */}
-                  <div className="grid grid-cols-4 gap-x-6 gap-y-1">
-                    {categories.map((cat) => {
-                      const active = isActive(
-                        "/products",
-                        cat.name.toLowerCase(),
-                      );
-                      return (
-                        <Link
-                          key={cat.id}
-                          href={`/products?category=${cat.name.toLowerCase()}`}
-                          className={`flex items-center gap-2 py-1.5 px-2 rounded-lg text-sm transition-all group/item ${
-                            active
-                              ? "text-[#D92D20] bg-red-50 font-semibold"
-                              : "text-gray-600 hover:text-[#D92D20] hover:bg-red-50"
-                          }`}
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full shrink-0 ${active ? "bg-[#D92D20]" : "bg-gray-300 group-hover/item:bg-[#D92D20]"}`}
-                          />
-                          <span className="leading-tight">{cat.name}</span>
-                        </Link>
-                      );
-                    })}
+                  <div className="overflow-y-auto pr-2 scrollbar-thin">
+                    <div className="grid grid-cols-4 gap-x-4 gap-y-0.5">
+                      {categories.map((cat) => {
+                        const active = isActive(
+                          "/products",
+                          cat.name.toLowerCase(),
+                        );
+                        return (
+                          <Link
+                            key={cat.id}
+                            href={`/products?category=${cat.name.toLowerCase()}`}
+                            className={`flex items-center gap-1.5 py-1.5 px-2 rounded-md text-xs transition-all group/item ${
+                              active
+                                ? "text-[#D92D20] bg-red-50 font-semibold"
+                                : "text-gray-600 hover:text-[#D92D20] hover:bg-red-50"
+                            }`}
+                          >
+                            <span
+                              className={`w-1 h-1 rounded-full shrink-0 ${active ? "bg-[#D92D20]" : "bg-gray-300 group-hover/item:bg-[#D92D20]"}`}
+                            />
+                            <span className="leading-tight truncate">
+                              {cat.name}
+                            </span>
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>
