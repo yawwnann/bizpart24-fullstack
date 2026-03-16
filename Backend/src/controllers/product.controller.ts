@@ -426,6 +426,53 @@ export class ProductController {
     }
   };
 
+  public bulkDelete = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const { productIds } = req.body;
+
+      if (
+        !productIds ||
+        !Array.isArray(productIds) ||
+        productIds.length === 0
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Product IDs array is required",
+        });
+      }
+
+      // Validate that all products exist
+      const existingProducts = await prisma.product.findMany({
+        where: { id: { in: productIds } },
+        select: { id: true },
+      });
+
+      if (existingProducts.length !== productIds.length) {
+        return res.status(404).json({
+          success: false,
+          message: "Some products not found",
+        });
+      }
+
+      // Delete all products (ProductImage has onDelete: Cascade)
+      const deleteResult = await prisma.product.deleteMany({
+        where: { id: { in: productIds } },
+      });
+
+      res.json({
+        success: true,
+        message: `${deleteResult.count} products removed successfully`,
+        deletedCount: deleteResult.count,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   // Delete a single detail image
   public deleteImage = async (
     req: Request,

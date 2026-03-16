@@ -40,6 +40,17 @@ router.put(
   productController.update,
 );
 router.delete("/:id", protect, productController.delete);
+router.post(
+  "/bulk-delete",
+  protect,
+  [
+    body("productIds")
+      .isArray({ min: 1 })
+      .withMessage("Product IDs array is required"),
+    validate,
+  ],
+  productController.bulkDelete,
+);
 router.delete("/:id/images/:imageId", protect, productController.deleteImage);
 
 export default router;

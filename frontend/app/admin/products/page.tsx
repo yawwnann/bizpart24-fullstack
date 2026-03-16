@@ -11,6 +11,7 @@ import {
   ChevronDown,
   SlidersHorizontal,
   X,
+  Check,
 } from "lucide-react";
 import api from "@/lib/api";
 import Link from "next/link";
@@ -68,6 +69,12 @@ export default function AdminProductsPage() {
   const [sort, setSort] = useState<SortOption>("newest");
   const [showFilters, setShowFilters] = useState(false);
 
+  // Bulk selection
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
+    new Set(),
+  );
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
@@ -91,6 +98,7 @@ export default function AdminProductsPage() {
     setPage(1);
     setProducts([]);
     setHasMore(true);
+    setSelectedProducts(new Set()); // Clear selection when filters change
   }, [search, categoryFilter, stockFilter, sort]);
 
   // Fetch products
@@ -169,6 +177,57 @@ export default function AdminProductsPage() {
     }
   };
 
+  // Bulk selection functions
+  const toggleSelectProduct = (productId: string) => {
+    const newSelected = new Set(selectedProducts);
+    if (newSelected.has(productId)) {
+      newSelected.delete(productId);
+    } else {
+      newSelected.add(productId);
+    }
+    setSelectedProducts(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedProducts.size === products.length) {
+      setSelectedProducts(new Set());
+    } else {
+      setSelectedProducts(new Set(products.map((p) => p.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedProducts.size === 0) return;
+
+    const count = selectedProducts.size;
+    if (!confirm(`Yakin ingin menghapus ${count} produk yang dipilih?`)) return;
+
+    setIsDeleting(true);
+    try {
+      const token = localStorage.getItem("adminToken");
+      const productIds = Array.from(selectedProducts);
+
+      const response = await api.post(
+        "/products/bulk-delete",
+        { productIds },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      if (response.data.success) {
+        setProducts((prev) => prev.filter((p) => !selectedProducts.has(p.id)));
+        setTotalCount((prev) => prev - selectedProducts.size);
+        setSelectedProducts(new Set());
+
+        alert(`${count} produk berhasil dihapus`);
+      }
+    } catch (error) {
+      console.error("Bulk delete error:", error);
+      alert("Gagal menghapus produk. Silakan coba lagi.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const clearFilters = () => {
     setCategoryFilter("");
     setStockFilter("all");
@@ -188,13 +247,34 @@ export default function AdminProductsPage() {
               ? "Memuat..."
               : `${products.length}${totalCount > products.length ? ` dari ${totalCount}` : ""} produk`}
           </p>
+          {selectedProducts.size > 0 && (
+            <p className="text-sm text-blue-600 mt-1">
+              {selectedProducts.size} produk dipilih
+            </p>
+          )}
         </div>
-        <Link
-          href="/admin/products/new"
-          className="px-4 py-2 bg-gray-900 hover:bg-gray-700 text-white rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors whitespace-nowrap self-start md:self-auto"
-        >
-          <Plus className="w-4 h-4" /> Tambah Produk
-        </Link>
+        <div className="flex items-center gap-2">
+          {selectedProducts.size > 0 && (
+            <button
+              onClick={handleBulkDelete}
+              disabled={isDeleting}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors"
+            >
+              {isDeleting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}
+              Hapus {selectedProducts.size} Produk
+            </button>
+          )}
+          <Link
+            href="/admin/products/new"
+            className="px-4 py-2 bg-gray-900 hover:bg-gray-700 text-white rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors whitespace-nowrap"
+          >
+            <Plus className="w-4 h-4" /> Tambah Produk
+          </Link>
+        </div>
       </div>
 
       {/* Search + Filter Bar */}
@@ -399,6 +479,25 @@ export default function AdminProductsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/60">
+                <th className="px-5 py-3.5 text-left">
+                  <div className="flex items-center">
+                    <button
+                      onClick={toggleSelectAll}
+                      className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
+                        selectedProducts.size === products.length &&
+                        products.length > 0
+                          ? "bg-gray-900 border-gray-900 text-white"
+                          : selectedProducts.size > 0
+                            ? "bg-gray-300 border-gray-300 text-white"
+                            : "border-gray-300 hover:border-gray-400"
+                      }`}
+                    >
+                      {selectedProducts.size > 0 && (
+                        <Check className="w-2.5 h-2.5" />
+                      )}
+                    </button>
+                  </div>
+                </th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wide">
                   Produk
                 </th>
@@ -417,13 +516,13 @@ export default function AdminProductsPage() {
             <tbody className="divide-y divide-gray-50">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-5 py-14 text-center">
+                  <td colSpan={6} className="px-5 py-14 text-center">
                     <Loader2 className="w-6 h-6 animate-spin text-gray-300 mx-auto" />
                   </td>
                 </tr>
               ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-5 py-14 text-center">
+                  <td colSpan={6} className="px-5 py-14 text-center">
                     <Package className="w-8 h-8 text-gray-200 mx-auto mb-2" />
                     <p className="text-sm text-gray-300">
                       Tidak ada produk ditemukan.
@@ -443,8 +542,24 @@ export default function AdminProductsPage() {
                   <tr
                     key={product.id}
                     ref={idx === products.length - 1 ? lastRowRef : null}
-                    className="hover:bg-gray-50 transition-colors"
+                    className={`hover:bg-gray-50 transition-colors ${
+                      selectedProducts.has(product.id) ? "bg-blue-50" : ""
+                    }`}
                   >
+                    <td className="px-5 py-3.5">
+                      <button
+                        onClick={() => toggleSelectProduct(product.id)}
+                        className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
+                          selectedProducts.has(product.id)
+                            ? "bg-gray-900 border-gray-900 text-white"
+                            : "border-gray-300 hover:border-gray-400"
+                        }`}
+                      >
+                        {selectedProducts.has(product.id) && (
+                          <Check className="w-2.5 h-2.5" />
+                        )}
+                      </button>
+                    </td>
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden shrink-0">
