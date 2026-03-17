@@ -114,10 +114,7 @@ export default function CartPage() {
                       </span>
                       <span>Rp {totalPrice.toLocaleString("id-ID")}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Estimasi Potongan</span>
-                      <span className="text-green-600">- Rp 0</span>
-                    </div>
+                  
                   </div>
 
                   <div className="border-t border-gray-100 pt-4 mb-6">

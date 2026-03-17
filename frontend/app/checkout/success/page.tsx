@@ -3,7 +3,7 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/Button";
-import { CheckCircle, CreditCard, Home, ShoppingBag } from "lucide-react";
+import { AlertTriangle, CheckCircle, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 
 export default function CheckoutSuccessPage() {
@@ -29,15 +29,20 @@ export default function CheckoutSuccessPage() {
           </p>
 
           {/* Warning Box */}
-          <div className="bg-blue-50/80 border border-blue-100 rounded-2xl p-6 mb-10 text-left text-[15px] text-blue-900 shadow-sm leading-relaxed">
-            <p className="mb-3">
-              <span className="font-bold text-blue-700">Penting:</span> Tagihan
-              awal (tanpa ongkos kirim) telah kami kirimkan ke email Anda.
+          <div className="bg-red-50 border-2 border-red-400 rounded-2xl p-6 mb-10 text-left shadow-md shadow-red-100">
+            <div className="flex items-center gap-2 mb-3">
+              <AlertTriangle className="w-6 h-6 text-red-600 flex-shrink-0" strokeWidth={2.5} />
+              <span className="text-red-700 font-extrabold text-lg tracking-wide uppercase">
+                Penting!
+              </span>
+            </div>
+            <p className="text-red-900 font-semibold text-[15px] mb-3 leading-relaxed">
+              Tagihan awal <span className="underline decoration-2 decoration-red-400">(tanpa ongkos kirim)</span> telah kami kirimkan ke email Anda.
             </p>
-            <p>
+            <p className="text-red-800 text-[14px] leading-relaxed">
               Jika email tidak ada di <em>Inbox</em>, harap periksa{" "}
-              <strong>folder Spam/Junk</strong>. Jika masuk kesana, mohon
-              laporkan sebagai <strong>Bukan Spam</strong> agar informasi ongkos
+              <strong className="bg-red-200 px-1 rounded">folder Spam/Junk</strong>. Jika masuk kesana, mohon
+              laporkan sebagai <strong className="bg-red-200 px-1 rounded">Bukan Spam</strong> agar informasi ongkos
               kirim selanjutnya dapat sampai dengan aman.
             </p>
           </div>
@@ -49,7 +54,7 @@ export default function CheckoutSuccessPage() {
               asChild
             >
               <a
-                href="https://wa.me/6282180465969?text=Halo%20Admin%20BIZPART24,%20saya%20sudah%20membuat%20pesanan.%20Tolong%20cek%20dan%20hitung%20ongkirnya%20ya."
+                href="https://wa.me/6282140130066?text=Halo%20Admin%20BIZPART24,%20saya%20sudah%20membuat%20pesanan.%20Tolong%20cek%20dan%20hitung%20ongkirnya%20ya."
                 target="_blank"
                 rel="noopener noreferrer"
               >
