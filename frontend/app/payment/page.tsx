@@ -21,6 +21,7 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import api from "@/lib/api";
+import { generateInvoicePDF } from "@/lib/generateInvoice";
 
 type OrderItem = { name: string; qty: number; price: number; subtotal: number };
 type Order = {
@@ -38,6 +39,7 @@ type Order = {
   trackingNumber: string | null;
   courierType: string | null;
   items: OrderItem[];
+  createdAt?: string;
 };
 
 const BANK_NAME = process.env.NEXT_PUBLIC_BANK_NAME ?? "BCA";
@@ -102,6 +104,8 @@ function PaymentContent() {
   const [confirmDone, setConfirmDone] = useState(false);
   const [confirmErr, setConfirmErr] = useState("");
   const rcptRef = useRef<HTMLInputElement>(null);
+
+  const [downloading, setDownloading] = useState(false);
 
   /* ─── Auto-search from URL param ─────────────────── */
   useEffect(() => {
@@ -250,6 +254,25 @@ function PaymentContent() {
           {/* ── Order result ── */}
           {order && (
             <div className="space-y-3">
+              {/* Download Invoice Button */}
+              <button
+                onClick={async () => {
+                  setDownloading(true);
+                  try {
+                    await generateInvoicePDF(order);
+                  } finally {
+                    setDownloading(false);
+                  }
+                }}
+                disabled={downloading}
+                className="w-full h-12 bg-gray-900 hover:bg-gray-700 disabled:opacity-50 text-white rounded-2xl text-sm font-semibold flex items-center justify-center gap-2.5 transition-all shadow-sm"
+              >
+                {downloading ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Membuat PDF...</>
+                ) : (
+                  <><Receipt className="w-4 h-4" /> Unduh Invoice PDF</>
+                )}
+              </button>
               {/* Order summary card */}
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 {/* Header */}

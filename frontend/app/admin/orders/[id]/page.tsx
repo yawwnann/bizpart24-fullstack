@@ -185,7 +185,7 @@ export default function AdminOrderDetailPage() {
               <div>
                 <p className="text-xs text-gray-400 mb-1">No. Telepon</p>
                 <a
-                  href={`https://wa.me/${order.phone}`} target="_blank" rel="noreferrer"
+                  href={`https://wa.me/${order.phone?.startsWith("0") ? "62" + order.phone.slice(1) : order.phone}`} target="_blank" rel="noreferrer"
                   className="font-medium text-blue-600 hover:underline"
                 >
                   {order.phone}
