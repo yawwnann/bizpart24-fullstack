@@ -89,7 +89,7 @@ export class MailService {
             </ul>
 
             <div style="margin-top: 20px;">
-              <a href="${frontendUrl}/admin/orders/${order._id}" style="background-color: #D92D20; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Input Ongkir Sekarang</a>
+              <a href="${frontendUrl}/admin/orders/${order.id}" style="background-color: #D92D20; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Input Ongkir Sekarang</a>
             </div>
           </div>
         `,
