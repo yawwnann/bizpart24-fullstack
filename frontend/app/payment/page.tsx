@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import {
@@ -79,7 +80,8 @@ const STATUS_MAP: Record<
   },
 };
 
-export default function PaymentPage() {
+function PaymentContent() {
+  const searchParams = useSearchParams();
   const [orderId, setOrderId] = useState("");
   const [order, setOrder] = useState<Order | null>(null);
   const [searching, setSearching] = useState(false);
@@ -100,6 +102,31 @@ export default function PaymentPage() {
   const [confirmDone, setConfirmDone] = useState(false);
   const [confirmErr, setConfirmErr] = useState("");
   const rcptRef = useRef<HTMLInputElement>(null);
+
+  /* ─── Auto-search from URL param ─────────────────── */
+  useEffect(() => {
+    const paramId = searchParams.get("orderId");
+    if (paramId) {
+      setOrderId(paramId);
+      // trigger search after state is set
+      (async () => {
+        setSearching(true);
+        setSearchErr("");
+        setOrder(null);
+        setUploadDone(false);
+        try {
+          const res = await api.get(`/orders/${paramId.trim()}`);
+          if (res.data.success) setOrder(res.data.data);
+          else setSearchErr("Pesanan tidak ditemukan. Periksa kembali ID pesanan Anda.");
+        } catch {
+          setSearchErr("Pesanan tidak ditemukan. Periksa kembali ID pesanan Anda.");
+        } finally {
+          setSearching(false);
+        }
+      })();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* ─── Handlers ─────────────────────────────────── */
   const handleSearch = async () => {
@@ -669,5 +696,13 @@ export default function PaymentPage() {
 
       <Footer />
     </main>
+  );
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={null}>
+      <PaymentContent />
+    </Suspense>
   );
 }

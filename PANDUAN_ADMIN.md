@@ -319,15 +319,23 @@ Dashboard adalah halaman utama setelah login yang menampilkan ringkasan informas
 ### Mengedit Kategori
 
 1. **Pilih Kategori yang Akan Diedit**
-   - Klik tombol "Edit" pada kategori yang ingin diubah
+   - Di daftar kategori, klik tombol "Edit" (ikon pensil) pada kategori yang ingin diubah
+   - Nama kategori akan berubah menjadi input field yang bisa diedit
 
 2. **Ubah Informasi**
-   - Ubah nama atau deskripsi kategori
+   - Ketik nama kategori yang baru di input field
    - Pastikan nama kategori tidak sama dengan yang sudah ada
 
 3. **Simpan Perubahan**
-   - Klik tombol "Simpan"
-   - Perubahan akan tersimpan
+   - Klik tombol "Simpan" (ikon centang hijau) untuk menyimpan perubahan
+   - Atau klik tombol "Batal" (ikon X) untuk membatalkan edit
+   - Perubahan akan tersimpan dan slug otomatis diperbarui
+
+**Tips Edit Kategori:**
+
+- Edit dilakukan secara inline (langsung di tabel)
+- Slug akan otomatis diperbarui berdasarkan nama baru
+- Saat sedang edit, tombol hapus akan dinonaktifkan untuk keamanan
 
 ### Menghapus Kategori
 

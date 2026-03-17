@@ -184,7 +184,7 @@ export class MailService {
 
               <p style="margin-top: 20px;">Setelah transfer, silakan konfirmasi pembayaran Anda disini:</p>
               <div style="text-align: center; margin: 20px 0;">
-                <a href="${frontendUrl}/payment" style="background-color: #D92D20; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Konfirmasi Pembayaran</a>
+                <a href="${frontendUrl}/payment?orderId=${order.orderId}" style="background-color: #D92D20; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Konfirmasi Pembayaran</a>
               </div>
             </div>
             <div style="background-color: #f1f1f1; padding: 15px; text-align: center; font-size: 12px; color: #666;">

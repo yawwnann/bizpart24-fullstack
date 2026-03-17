@@ -1,23 +1,26 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function AdminPage() {
+function AdminRedirect() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect");
 
   useEffect(() => {
-    // Check if admin token exists
     const adminToken = localStorage.getItem("adminToken");
-
     if (adminToken) {
-      // User is logged in, redirect to dashboard
-      router.push("/admin/dashboard");
+      // Already logged in — go to redirect target or dashboard
+      router.push(redirect ?? "/admin/dashboard");
     } else {
-      // User is not logged in, redirect to login
-      router.push("/admin/login");
+      // Not logged in — preserve redirect param through login
+      const loginUrl = redirect
+        ? `/admin/login?redirect=${encodeURIComponent(redirect)}`
+        : "/admin/login";
+      router.push(loginUrl);
     }
-  }, [router]);
+  }, [router, redirect]);
 
   // Show loading state while checking
   return (
@@ -27,5 +30,13 @@ export default function AdminPage() {
         <p className="mt-4 text-gray-600">Redirecting...</p>
       </div>
     </div>
+  );
+}
+
+export default function AdminPage() {
+  return (
+    <Suspense fallback={null}>
+      <AdminRedirect />
+    </Suspense>
   );
 }

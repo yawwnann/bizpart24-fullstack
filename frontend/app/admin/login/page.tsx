@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { Lock, Mail, Loader2, AlertCircle } from "lucide-react";
 import api from "@/lib/api";
 
-export default function AdminLoginPage() {
+function AdminLoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") ?? "/admin/dashboard";
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -34,7 +36,7 @@ export default function AdminLoginPage() {
         localStorage.setItem("adminToken", response.data.token);
         document.cookie = `adminToken=${response.data.token}; path=/;`; // For middleware if needed later
 
-        router.push("/admin/dashboard");
+        router.push(redirectTo);
       }
     } catch (err: any) {
       setError(
@@ -122,5 +124,13 @@ export default function AdminLoginPage() {
         </div>
       </Card>
     </main>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <AdminLoginContent />
+    </Suspense>
   );
 }
