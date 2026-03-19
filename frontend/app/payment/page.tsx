@@ -19,6 +19,8 @@ import {
   Truck,
   CreditCard,
   BadgeCheck,
+  Landmark,
+  QrCode,
 } from "lucide-react";
 import api from "@/lib/api";
 import { generateInvoicePDF } from "@/lib/generateInvoice";
@@ -85,6 +87,7 @@ const STATUS_MAP: Record<
 /* ─── Payment Method Tabs Component ────────────────────────── */
 function PaymentMethodTabs({ grandTotal }: { grandTotal: number }) {
   const [tab, setTab] = useState<"bank" | "qris">("bank");
+  const [isQrZoomed, setIsQrZoomed] = useState(false);
 
   return (
     <div>
@@ -92,23 +95,25 @@ function PaymentMethodTabs({ grandTotal }: { grandTotal: number }) {
       <div className="flex border-b border-gray-100">
         <button
           onClick={() => setTab("bank")}
-          className={`flex-1 py-3 text-sm font-semibold transition-colors ${
+          className={`flex-1 py-3 text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
             tab === "bank"
               ? "text-gray-900 border-b-2 border-gray-900"
               : "text-gray-400 hover:text-gray-600"
           }`}
         >
-          🏦 Transfer Bank
+          <Landmark className="w-4 h-4" />
+          Transfer Bank
         </button>
         <button
           onClick={() => setTab("qris")}
-          className={`flex-1 py-3 text-sm font-semibold transition-colors ${
+          className={`flex-1 py-3 text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
             tab === "qris"
               ? "text-gray-900 border-b-2 border-gray-900"
               : "text-gray-400 hover:text-gray-600"
           }`}
         >
-          📱 QRIS
+          <QrCode className="w-4 h-4" />
+          QRIS
         </button>
       </div>
 
@@ -119,15 +124,15 @@ function PaymentMethodTabs({ grandTotal }: { grandTotal: number }) {
             <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/5 rounded-full" />
             <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-white/5 rounded-full" />
             <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-              {process.env.NEXT_PUBLIC_BANK_NAME ?? "BCA"}
+              {BANK_NAME}
             </p>
             <p className="text-2xl font-bold tracking-[.15em] mb-2">
-              {process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER ?? "—"}
+              {BANK_NUMBER}
             </p>
             <p className="text-sm text-gray-300">
               a.n.{" "}
               <span className="font-semibold text-white">
-                {process.env.NEXT_PUBLIC_BANK_ACCOUNT_NAME ?? "—"}
+                {BANK_HOLDER}
               </span>
             </p>
           </div>
@@ -140,12 +145,16 @@ function PaymentMethodTabs({ grandTotal }: { grandTotal: number }) {
           <p className="text-xs text-gray-400 mb-3 text-center">
             Scan QR Code berikut menggunakan aplikasi mobile banking / e-wallet Anda
           </p>
-          <div className="bg-white border border-gray-100 rounded-2xl p-3 shadow-sm inline-block">
+          <div 
+            onClick={() => setIsQrZoomed(true)}
+            className="bg-white border border-gray-100 rounded-2xl p-3 shadow-sm inline-block cursor-pointer hover:border-[#D92D20]/50 hover:shadow-md transition-all group"
+            title="Klik untuk memperbesar"
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/qrcode.jpeg"
               alt="QR Code Pembayaran BIZPART24"
-              className="w-52 h-52 object-contain"
+              className="w-52 h-52 object-contain group-hover:scale-[1.02] transition-transform"
             />
           </div>
           <p className="text-xs text-gray-400 mt-3 text-center">
@@ -154,6 +163,45 @@ function PaymentMethodTabs({ grandTotal }: { grandTotal: number }) {
           <p className="text-xs text-gray-300 mt-1 text-center">
             Setelah scan, upload bukti pembayaran di bawah
           </p>
+        </div>
+      )}
+
+      {/* QR Code Zoom Modal */}
+      {isQrZoomed && (
+        <div 
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm"
+          onClick={() => setIsQrZoomed(false)}
+        >
+          <div 
+            className="relative bg-white rounded-3xl p-6 w-full max-w-sm flex flex-col items-center shadow-2xl animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setIsQrZoomed(false)}
+              className="absolute top-4 right-4 p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="text-center mb-5 w-full pr-8">
+              <h3 className="font-bold text-gray-900 text-lg">Scan QRIS</h3>
+              <p className="text-sm text-gray-500">{BANK_HOLDER}</p>
+            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/qrcode.jpeg"
+              alt="QR Code Zoomed"
+              className="w-full h-auto object-contain rounded-xl border border-gray-100 p-2"
+            />
+            <div className="mt-5 text-center bg-gray-50 text-[#D92D20] px-6 py-3 rounded-xl border border-red-100 w-full">
+              <p className="text-xs text-gray-500 mb-1">Total Pembayaran</p>
+              <p className="font-bold text-xl">
+                Rp {grandTotal.toLocaleString("id-ID")}
+              </p>
+            </div>
+            <p className="text-xs text-gray-400 mt-4 text-center">
+              Klik di luar area putih untuk menutup
+            </p>
+          </div>
         </div>
       )}
     </div>
