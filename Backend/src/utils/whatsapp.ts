@@ -17,9 +17,9 @@ interface OrderForTracking {
 }
 
 export const generateWhatsAppLink = (order: OrderForWA) => {
-  const bankName = process.env.BANK_NAME || "BCA";
-  const bankAccount = process.env.BANK_ACCOUNT_NUMBER || "1234567890";
-  const bankHolder = process.env.BANK_ACCOUNT_NAME || "PT BIZPART24";
+  const bankName = process.env.BANK_NAME || "BRI";
+  const bankAccount = process.env.BANK_ACCOUNT_NUMBER || "2196 0101 2944 508";
+  const bankHolder = process.env.BANK_ACCOUNT_NAME || "Bambang sismanto";
   const frontendUrl =
     process.env.FRONTEND_URL || "https://bizpart24-fullstack.vercel.app";
 

@@ -6,9 +6,9 @@ dotenv.config();
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@bizpart24.com";
-const BANK_NAME = process.env.BANK_NAME || "BCA";
-const BANK_ACCOUNT = process.env.BANK_ACCOUNT_NUMBER || "1234567890";
-const BANK_HOLDER = process.env.BANK_ACCOUNT_NAME || "PT BIZPART24";
+const BANK_NAME = process.env.BANK_NAME || "BRI";
+const BANK_ACCOUNT = process.env.BANK_ACCOUNT_NUMBER || "2196 0101 2944 508";
+const BANK_HOLDER = process.env.BANK_ACCOUNT_NAME || "Bambang sismanto";
 
 export class MailService {
   // 1. Kirim Email ke Customer: Pesanan Dibuat (Menunggu Ongkir)

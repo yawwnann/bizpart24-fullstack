@@ -42,9 +42,9 @@ type Order = {
   createdAt?: string;
 };
 
-const BANK_NAME = process.env.NEXT_PUBLIC_BANK_NAME ?? "BCA";
-const BANK_NUMBER = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER ?? "1234567890";
-const BANK_HOLDER = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NAME ?? "PT BIZPART24";
+const BANK_NAME = process.env.NEXT_PUBLIC_BANK_NAME ?? "BRI";
+const BANK_NUMBER = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER ?? "2196 0101 2944 508";
+const BANK_HOLDER = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NAME ?? "Bambang sismanto";
 
 const STATUS_MAP: Record<
   string,
