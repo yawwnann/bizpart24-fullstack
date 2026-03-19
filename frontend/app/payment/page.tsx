@@ -82,6 +82,84 @@ const STATUS_MAP: Record<
   },
 };
 
+/* ─── Payment Method Tabs Component ────────────────────────── */
+function PaymentMethodTabs({ grandTotal }: { grandTotal: number }) {
+  const [tab, setTab] = useState<"bank" | "qris">("bank");
+
+  return (
+    <div>
+      {/* Tab buttons */}
+      <div className="flex border-b border-gray-100">
+        <button
+          onClick={() => setTab("bank")}
+          className={`flex-1 py-3 text-sm font-semibold transition-colors ${
+            tab === "bank"
+              ? "text-gray-900 border-b-2 border-gray-900"
+              : "text-gray-400 hover:text-gray-600"
+          }`}
+        >
+          🏦 Transfer Bank
+        </button>
+        <button
+          onClick={() => setTab("qris")}
+          className={`flex-1 py-3 text-sm font-semibold transition-colors ${
+            tab === "qris"
+              ? "text-gray-900 border-b-2 border-gray-900"
+              : "text-gray-400 hover:text-gray-600"
+          }`}
+        >
+          📱 QRIS
+        </button>
+      </div>
+
+      {/* Tab content */}
+      {tab === "bank" ? (
+        <div className="p-6">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-700 rounded-2xl px-6 py-5 text-white relative overflow-hidden">
+            <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/5 rounded-full" />
+            <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-white/5 rounded-full" />
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+              {process.env.NEXT_PUBLIC_BANK_NAME ?? "BCA"}
+            </p>
+            <p className="text-2xl font-bold tracking-[.15em] mb-2">
+              {process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER ?? "—"}
+            </p>
+            <p className="text-sm text-gray-300">
+              a.n.{" "}
+              <span className="font-semibold text-white">
+                {process.env.NEXT_PUBLIC_BANK_ACCOUNT_NAME ?? "—"}
+              </span>
+            </p>
+          </div>
+          <p className="text-xs text-gray-400 text-center mt-3">
+            Transfer senilai <strong className="text-[#D92D20]">Rp {grandTotal.toLocaleString("id-ID")}</strong> — pastikan nominal <strong>sesuai total</strong>
+          </p>
+        </div>
+      ) : (
+        <div className="p-6 flex flex-col items-center">
+          <p className="text-xs text-gray-400 mb-3 text-center">
+            Scan QR Code berikut menggunakan aplikasi mobile banking / e-wallet Anda
+          </p>
+          <div className="bg-white border border-gray-100 rounded-2xl p-3 shadow-sm inline-block">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/qrcode.jpeg"
+              alt="QR Code Pembayaran BIZPART24"
+              className="w-52 h-52 object-contain"
+            />
+          </div>
+          <p className="text-xs text-gray-400 mt-3 text-center">
+            Nominal: <strong className="text-[#D92D20]">Rp {grandTotal.toLocaleString("id-ID")}</strong>
+          </p>
+          <p className="text-xs text-gray-300 mt-1 text-center">
+            Setelah scan, upload bukti pembayaran di bawah
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function PaymentContent() {
   const searchParams = useSearchParams();
   const [orderId, setOrderId] = useState("");
@@ -388,46 +466,24 @@ function PaymentContent() {
               {/* 2. Menunggu pembayaran — BANK + UPLOAD */}
               {order.status === "menunggu_pembayaran" && !alreadyPaid && (
                 <>
-                  {/* Bank account card */}
+                  {/* Payment method card — tabbed */}
                   <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    {/* Header */}
                     <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
                       <CreditCard className="w-4 h-4 text-gray-400" />
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">
-                          Rekening Pembayaran
-                        </p>
+                        <p className="text-sm font-semibold text-gray-900">Metode Pembayaran</p>
                         <p className="text-xs text-gray-400 mt-0.5">
-                          Transfer senilai{" "}
+                          Total:{" "}
                           <strong className="text-[#D92D20]">
                             Rp {order.grandTotal.toLocaleString("id-ID")}
-                          </strong>{" "}
-                          ke rekening berikut
+                          </strong>
                         </p>
                       </div>
                     </div>
-                    <div className="p-6">
-                      <div className="bg-gradient-to-br from-gray-900 to-gray-700 rounded-2xl px-6 py-5 text-white relative overflow-hidden">
-                        {/* decorative circles */}
-                        <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/5 rounded-full" />
-                        <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-white/5 rounded-full" />
-                        <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-                          {BANK_NAME}
-                        </p>
-                        <p className="text-3xl font-bold tracking-[.25em] mb-2">
-                          {BANK_NUMBER}
-                        </p>
-                        <p className="text-sm text-gray-300">
-                          a.n.{" "}
-                          <span className="font-semibold text-white">
-                            {BANK_HOLDER}
-                          </span>
-                        </p>
-                      </div>
-                      <p className="text-xs text-gray-400 text-center mt-3">
-                        Pastikan nominal transfer <strong>sesuai total</strong>{" "}
-                        agar mudah diverifikasi
-                      </p>
-                    </div>
+
+                    {/* Tabs */}
+                    <PaymentMethodTabs grandTotal={order.grandTotal} />
                   </div>
 
                   {/* Upload proof */}

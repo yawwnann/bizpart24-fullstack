@@ -318,6 +318,87 @@ export async function generateInvoicePDF(order: InvoiceOrder): Promise<void> {
 
   curY = tY + 12;
 
+  /* ─── PAYMENT INFO (Bank + QR) ───────────────────────────── */
+  const bankName   = process.env.NEXT_PUBLIC_BANK_NAME           ?? "BRI";
+  const bankNumber = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NUMBER ?? "—";
+  const bankHolder = process.env.NEXT_PUBLIC_BANK_ACCOUNT_NAME   ?? "BIZPART24";
+
+  // Load QR code image
+  let qrDataUrl: string | null = null;
+  try {
+    const qrResp = await fetch("/qrcode.jpeg");
+    const qrBlob = await qrResp.blob();
+    qrDataUrl = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.readAsDataURL(qrBlob);
+    });
+  } catch { /* QR optional */ }
+
+  const sectionH = 42;
+  if (curY + sectionH < pageH - 22) {
+    doc.setFillColor(249, 250, 251);
+    doc.setDrawColor(229, 231, 235);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(margin, curY, contentW, sectionH, 3, 3, "FD");
+
+    // ── Left: Bank info ──────────────────────
+    const bankX = margin + 6;
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(150, 150, 150);
+    doc.text("TRANSFER KE", bankX, curY + 8);
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(50, 50, 50);
+    doc.text(bankName, bankX, curY + 14);
+
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(17, 17, 17);
+    doc.text(bankNumber, bankX, curY + 22);
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 100, 100);
+    doc.text(`a.n. ${bankHolder}`, bankX, curY + 29);
+
+    // Divider note
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(160, 160, 160);
+    doc.text("Pastikan nominal transfer sesuai total", bankX, curY + 37);
+
+    // ── Right: QR code ───────────────────────
+    const qrSize = 36;
+    const qrX = pageW - margin - qrSize - 4;
+    const qrY = curY + 3;
+
+    if (qrDataUrl) {
+      try {
+        // White background border
+        doc.setFillColor(255, 255, 255);
+        doc.setDrawColor(229, 231, 235);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(qrX - 2, qrY - 2, qrSize + 4, qrSize + 4, 2, 2, "FD");
+        doc.addImage(qrDataUrl, "JPEG", qrX, qrY, qrSize, qrSize);
+      } catch { /* ignore */ }
+    }
+
+    doc.setFontSize(6.5);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("SCAN QRIS", qrX + qrSize / 2, qrY + qrSize + 6, { align: "center" });
+
+    // Vertical separator
+    const midX = qrX - 8;
+    doc.setDrawColor(229, 231, 235);
+    doc.setLineWidth(0.3);
+    doc.line(midX, curY + 5, midX, curY + sectionH - 5);
+
+    curY += sectionH + 4;
+  }
 
   /* ─── FOOTER ─────────────────────────────────────────────── */
   const footerY = pageH - 14;

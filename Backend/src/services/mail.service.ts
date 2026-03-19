@@ -180,6 +180,9 @@ export class MailService {
                 <p style="margin: 0 0 4px; font-size: 13px; color: #666;">Transfer ke rekening:</p>
                 <p style="margin: 0 0 2px; font-size: 20px; font-weight: bold; letter-spacing: 2px; color: #111;">${BANK_ACCOUNT}</p>
                 <p style="margin: 0; font-size: 13px; color: #555;">${BANK_NAME} — a.n. <strong>${BANK_HOLDER}</strong></p>
+                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed #ddd; font-size: 13px; color: #666;">
+                  *Anda juga bisa melakukan pembayaran via <strong>QRIS</strong> pada halaman konfirmasi.
+                </div>
               </div>
 
               <p style="margin-top: 20px;">Setelah transfer, silakan konfirmasi pembayaran Anda disini:</p>
