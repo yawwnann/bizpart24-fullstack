@@ -45,7 +45,7 @@ function ProductCatalogContent() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
   const searchParam = searchParams.get("search");
-  const sortParam = searchParams.get("sort") || "newest";
+  const sortParam = searchParams.get("sort") || "name_asc"; // Default A-Z
   const minPriceParam = searchParams.get("minPrice") || "";
   const maxPriceParam = searchParams.get("maxPrice") || "";
   const makeParam = searchParams.get("make") || "";
@@ -258,12 +258,10 @@ function ProductCatalogContent() {
                     onChange={(e) => handleSort(e.target.value)}
                     className="text-sm text-gray-700 border-0 focus:ring-0 cursor-pointer bg-transparent pr-1 font-medium"
                   >
-                    <option value="newest">Terbaru</option>
-                    <option value="oldest">Terlama</option>
-                    <option value="price_asc">Harga Terendah</option>
-                    <option value="price_desc">Harga Tertinggi</option>
                     <option value="name_asc">Nama (A-Z)</option>
                     <option value="name_desc">Nama (Z-A)</option>
+                    <option value="price_asc">Harga Terendah</option>
+                    <option value="price_desc">Harga Tertinggi</option>
                   </select>
                 </div>
 

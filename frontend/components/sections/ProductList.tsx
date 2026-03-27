@@ -33,7 +33,12 @@ export function ProductList() {
     const fetchProducts = async () => {
       try {
         const response = await import("@/lib/api").then((mod) =>
-          mod.default.get<ProductResponse>("/products"),
+          mod.default.get<ProductResponse>("/products", {
+            params: {
+              limit: 16,
+              sort: "name_asc", // A-Z sorting
+            },
+          }),
         );
         console.log("API Response (ProductList):", response.data);
         if (response.data.success) {
@@ -71,7 +76,7 @@ export function ProductList() {
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-          {Array.from({ length: 8 }).map((_, i) => (
+          {Array.from({ length: 16 }).map((_, i) => (
             <ProductCardSkeleton key={i} />
           ))}
         </div>
